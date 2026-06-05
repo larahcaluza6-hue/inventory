@@ -17,8 +17,8 @@ canvas{
 .auth-page{
     min-height:100vh;
     background:
-        linear-gradient(rgba(20,20,24,.16), rgba(20,20,24,.2)),
-        url("assets/login-bg.png") center / cover no-repeat fixed;
+        linear-gradient(rgba(20,20,24,.22), rgba(20,20,24,.28)),
+        url("assets/convenience-store-bg.webp") center / cover no-repeat fixed;
     color:#243044;
 }
 
@@ -448,6 +448,484 @@ canvas{
     object-fit:cover;
     border-radius:6px;
     border:1px solid #ddd;
+}
+
+.products-table-shell{
+    background:white;
+    border:1px solid #e6eaf0;
+    border-radius:8px;
+    box-shadow:0 10px 30px rgba(15,23,42,.04);
+    overflow-x:auto;
+    -webkit-overflow-scrolling:touch;
+}
+
+.products-table{
+    width:100%;
+    min-width:920px;
+    border-collapse:collapse;
+    margin:0;
+    color:#1f2937;
+}
+
+.product-list-table{
+    min-width:720px;
+}
+
+.product-list-table th,
+.product-list-table td{
+    padding:10px 14px;
+}
+
+.products-table th,
+.products-table td{
+    border-bottom:1px solid #e6eaf0;
+    border-right:1px solid #edf2f7;
+    padding:16px 26px;
+    vertical-align:middle;
+    white-space:nowrap;
+}
+
+.products-table th:last-child,
+.products-table td:last-child{
+    border-right:0;
+}
+
+.products-table thead th{
+    background:#f8fafc;
+    color:#64748b;
+    font-size:12px;
+    font-weight:800;
+    letter-spacing:0;
+    text-transform:uppercase;
+}
+
+.products-table tbody tr:last-child td{
+    border-bottom:0;
+}
+
+.products-table tbody tr{
+    transition:background .18s ease;
+}
+
+.products-table tbody tr:hover{
+    background:#fbfdff;
+}
+
+.product-cell{
+    display:flex;
+    align-items:center;
+    gap:18px;
+    min-width:285px;
+}
+
+.product-list-table .product-cell{
+    gap:10px;
+    min-width:180px;
+}
+
+.product-thumb{
+    width:84px;
+    height:84px;
+    flex:0 0 84px;
+    border-radius:6px;
+    object-fit:cover;
+    background:#eef2f7;
+    border:1px solid #e5e7eb;
+}
+
+.product-list-table .product-thumb{
+    width:46px;
+    height:46px;
+    flex-basis:46px;
+}
+
+.product-list-table .product-title{
+    font-size:14px;
+}
+
+.product-list-table .product-brand-cell,
+.product-list-table .price-cell{
+    font-size:13px;
+}
+
+.product-list-table .stock-count{
+    font-size:14px;
+}
+
+.product-list-table .stock-label{
+    font-size:12px;
+    margin-top:4px;
+}
+
+.product-list-table .soft-pill{
+    min-height:24px;
+    padding:5px 9px;
+    font-size:12px;
+}
+
+.product-list-table .product-action-btn{
+    width:34px;
+    height:34px;
+}
+
+.product-list-table .product-action-btn svg{
+    width:15px;
+    height:15px;
+}
+
+.product-list-table.actions-cell > .product-action-btn + .product-action-btn,
+.product-list-table .actions-cell > .product-action-btn + .product-action-btn{
+    margin-left:6px;
+}
+
+.product-thumb-empty{
+    display:grid;
+    place-items:center;
+    color:#7a8797;
+    font-size:12px;
+    font-weight:700;
+    text-align:center;
+}
+
+.product-title{
+    color:#111827;
+    font-size:15px;
+    font-weight:800;
+    line-height:1.25;
+}
+
+.id-cell{
+    color:#64748b;
+    font-size:14px;
+    font-weight:800;
+}
+
+.table-image-only{
+    width:62px;
+    height:62px;
+    flex-basis:62px;
+}
+
+.product-brand{
+    color:#64748b;
+    font-size:14px;
+    margin-top:7px;
+}
+
+.product-brand-cell,
+.date-cell{
+    color:#64748b;
+    font-size:14px;
+}
+
+.sku-cell,
+.price-cell{
+    color:#1f2937;
+    font-size:15px;
+}
+
+.stock-count{
+    font-size:16px;
+    font-weight:800;
+    line-height:1.1;
+}
+
+.stock-label{
+    color:#64748b;
+    font-size:13px;
+    margin-top:7px;
+}
+
+.stock-success{
+    color:#059669;
+}
+
+.stock-warning{
+    color:#f97316;
+}
+
+.stock-danger{
+    color:#ef4444;
+}
+
+.soft-pill{
+    display:inline-flex;
+    align-items:center;
+    min-height:28px;
+    border-radius:5px;
+    padding:6px 12px;
+    font-size:13px;
+    font-weight:800;
+    line-height:1;
+}
+
+.category-pill{
+    background:#eff6ff;
+    color:#2563eb;
+}
+
+.category-bags,
+.category-bag{
+    background:#f3e8ff;
+    color:#7c3aed;
+}
+
+.category-footwear,
+.category-shoes{
+    background:#dcfce7;
+    color:#059669;
+}
+
+.category-accessories,
+.category-accessory{
+    background:#ffedd5;
+    color:#f97316;
+}
+
+.category-clothing,
+.category-clothes{
+    background:#dbeafe;
+    color:#2563eb;
+}
+
+.category-watches,
+.category-watch{
+    background:#dbeafe;
+    color:#1d4ed8;
+}
+
+.status-success{
+    background:#dcfce7;
+    color:#059669;
+}
+
+.status-warning{
+    background:#ffedd5;
+    color:#f97316;
+}
+
+.status-danger{
+    background:#fee2e2;
+    color:#ef4444;
+}
+
+.actions-cell{
+    text-align:right;
+}
+
+.product-action-btn{
+    width:42px;
+    height:42px;
+    display:inline-grid;
+    place-items:center;
+    border:1px solid #e1e7ef;
+    border-radius:7px;
+    background:white;
+    color:#3155ff;
+    text-decoration:none;
+    transition:background .18s ease, border-color .18s ease, transform .18s ease;
+    vertical-align:middle;
+}
+
+.actions-cell > .product-action-btn + .product-action-btn{
+    margin-left:10px;
+}
+
+.product-action-btn svg{
+    width:18px;
+    height:18px;
+    fill:none;
+    stroke:currentColor;
+    stroke-width:2;
+    stroke-linecap:round;
+    stroke-linejoin:round;
+}
+
+.product-action-btn:hover{
+    background:#f8fbff;
+    border-color:#cbd8ee;
+    color:#1d4ed8;
+    transform:translateY(-1px);
+}
+
+.delete-action{
+    background:#fff1f2;
+    border-color:#fee2e2;
+    color:#ef4444;
+}
+
+.delete-action:hover{
+    background:#ffe4e6;
+    border-color:#fecdd3;
+    color:#dc2626;
+}
+
+.product-detail-head{
+    display:flex;
+    align-items:center;
+    gap:16px;
+    margin-bottom:20px;
+}
+
+.product-detail-image{
+    width:96px;
+    height:96px;
+    flex:0 0 96px;
+    object-fit:cover;
+    border-radius:8px;
+    border:1px solid #e5e7eb;
+    background:#eef2f7;
+}
+
+.product-detail-head h4{
+    margin:0;
+    font-size:20px;
+    font-weight:800;
+}
+
+.product-detail-head p{
+    margin:6px 0 0;
+    color:#64748b;
+}
+
+.product-detail-list{
+    display:grid;
+    gap:10px;
+    margin:0;
+}
+
+.product-detail-list div{
+    display:flex;
+    justify-content:space-between;
+    gap:16px;
+    border-top:1px solid #edf2f7;
+    padding-top:10px;
+}
+
+.product-detail-list dt{
+    color:#64748b;
+    font-weight:700;
+}
+
+.product-detail-list dd{
+    margin:0;
+    color:#111827;
+    font-weight:700;
+    text-align:right;
+}
+
+.empty-products{
+    color:#64748b;
+    font-size:15px;
+    padding:36px !important;
+    text-align:center;
+}
+
+.admin-subtitle{
+    margin:0;
+    color:#64748b;
+}
+
+.admin-panel{
+    margin-top:14px;
+}
+
+.admin-panel-header{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    margin-bottom:12px;
+}
+
+.admin-panel-header h3{
+    margin:0;
+    color:#111827;
+    font-size:22px;
+    font-weight:800;
+}
+
+.admin-users-table{
+    min-width:900px;
+}
+
+.market-products-table{
+    min-width:1040px;
+}
+
+.compact-market-table{
+    min-width:820px;
+}
+
+.compact-market-table th,
+.compact-market-table td{
+    padding:10px 14px;
+}
+
+.compact-market-table .product-cell{
+    gap:10px;
+    min-width:190px;
+}
+
+.compact-market-table .product-thumb{
+    width:46px;
+    height:46px;
+    flex-basis:46px;
+}
+
+.compact-market-table .product-title{
+    font-size:14px;
+}
+
+.compact-market-table .product-brand{
+    font-size:12px;
+    margin-top:4px;
+}
+
+.compact-market-table .price-cell{
+    font-size:13px;
+}
+
+.compact-market-table .stock-count{
+    font-size:14px;
+}
+
+.compact-market-table .stock-label{
+    font-size:12px;
+    margin-top:4px;
+}
+
+.compact-market-table .soft-pill{
+    min-height:24px;
+    padding:5px 9px;
+    font-size:12px;
+}
+
+.compact-market-table .product-action-btn{
+    width:34px;
+    height:34px;
+}
+
+.compact-market-table .product-action-btn svg{
+    width:15px;
+    height:15px;
+}
+
+.admin-user-cell{
+    display:flex;
+    align-items:center;
+    gap:12px;
+    font-weight:800;
+}
+
+.admin-avatar{
+    width:38px;
+    height:38px;
+    display:inline-grid;
+    place-items:center;
+    border-radius:50%;
+    background:#e0f2fe;
+    color:#0369a1;
+    font-weight:800;
 }
 
 .search-form{

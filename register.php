@@ -6,10 +6,13 @@ if(isset($_POST['register'])){
     $fullname = $_POST['fullname'];
     $email = $_POST['email'];
     $password = password_hash($_POST['password'], PASSWORD_DEFAULT);
+    $userCountQuery = mysqli_query($conn, "SELECT COUNT(*) AS total FROM users");
+    $userCount = mysqli_fetch_assoc($userCountQuery);
+    $role = (int) $userCount['total'] === 0 ? 'admin' : 'user';
 
     mysqli_query($conn,
-    "INSERT INTO users(fullname,email,password)
-    VALUES('$fullname','$email','$password')");
+    "INSERT INTO users(fullname,email,password,role)
+    VALUES('$fullname','$email','$password','$role')");
 
     header("Location: login.php");
 }
@@ -21,7 +24,7 @@ if(isset($_POST['register'])){
     <title>Register</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="style.css?v=4">
 </head>
 
 <body class="auth-page">

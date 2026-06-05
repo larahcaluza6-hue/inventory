@@ -3,6 +3,7 @@ $currentPage = basename($_SERVER['PHP_SELF']);
 $productPages = ['products.php', 'add_product.php', 'edit.php'];
 $marketPages = ['orders.php', 'add_market_stock.php'];
 $transactionPages = ['transactions.php'];
+$isAdminUser = function_exists('is_admin') && is_admin();
 ?>
 
 <div class="sidebar">
@@ -21,6 +22,11 @@ $transactionPages = ['transactions.php'];
         <li>
             <a class="<?php echo in_array($currentPage, $transactionPages) ? 'active' : ''; ?>" href="transactions.php">Transactions</a>
         </li>
+        <?php if ($isAdminUser) { ?>
+            <li>
+                <a class="<?php echo $currentPage == 'admin.php' ? 'active' : ''; ?>" href="admin.php">Admin</a>
+            </li>
+        <?php } ?>
         <li>
             <a href="logout.php">Logout</a>
         </li>

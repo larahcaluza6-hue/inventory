@@ -40,7 +40,7 @@ if (isset($_POST['reset_password'])) {
     <title>Forgot Password</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="style.css?v=3">
+    <link rel="stylesheet" href="style.css?v=4">
 </head>
 
 <body class="auth-page">
@@ -74,17 +74,14 @@ if (isset($_POST['reset_password'])) {
 
         <form method="POST" class="auth-form">
             <div class="auth-field">
-                <span class="auth-field-icon" aria-hidden="true">â—Ž</span>
                 <input type="email" name="email" class="form-control" placeholder="Email" required>
             </div>
 
             <div class="auth-field">
-                <span class="auth-field-icon" aria-hidden="true">â–£</span>
                 <input type="password" name="new_password" class="form-control" placeholder="New Password" required>
             </div>
 
             <div class="auth-field">
-                <span class="auth-field-icon" aria-hidden="true">â–£</span>
                 <input type="password" name="confirm_password" class="form-control" placeholder="Confirm Password" required>
             </div>
 

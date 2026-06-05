@@ -1,5 +1,6 @@
 <?php
 include 'db.php';
+include 'auth.php';
 
 $search = isset($_GET['search']) ? trim($_GET['search']) : '';
 $stockFilter = isset($_GET['stock']) ? $_GET['stock'] : '';
@@ -86,20 +87,18 @@ if ($stockFilter === 'low') {
         <?php } ?>
     </form>
 
-    <div class="table-responsive">
-    <table class="table table-bordered text-center align-middle">
+    <div class="products-table-shell">
+    <table class="products-table product-list-table">
 
-        <thead class="table-dark">
+        <thead>
             <tr>
-                <th>ID</th>
-                <th>Image</th>
-                <th>Stock Product </th>
-                <th>Category</th>
+                <th>Product</th>
                 <th>Brand</th>
-                <th>Quantity</th>
+                <th>Category</th>
+                <th>Stock</th>
                 <th>Price</th>
                 <th>Status</th>
-                <th>Action</th>
+                <th class="text-end">Actions</th>
             </tr>
         </thead>
 
@@ -108,60 +107,147 @@ if ($stockFilter === 'low') {
         <?php if (mysqli_num_rows($result) > 0) { ?>
             <?php $displayId = 1; ?>
             <?php while($row = mysqli_fetch_assoc($result)) { ?>
+            <?php
+                $quantity = (int) $row['quantity'];
+                $stockText = 'In Stock';
+                $statusClass = 'success';
+
+                if ($quantity === 0) {
+                    $stockText = 'Out of Stock';
+                    $statusClass = 'danger';
+                } elseif ($quantity < 10) {
+                    $stockText = 'Low Stock';
+                    $statusClass = 'warning';
+                }
+
+                $categoryKey = preg_replace('/[^a-z0-9]+/', '-', strtolower($row['category']));
+                $imageFile = "assets/uploads/" . $row['image'];
+                $hasImage = !empty($row['image']) && file_exists(__DIR__ . "/" . $imageFile);
+            ?>
 
             <tr>
-                <td><?php echo $displayId; ?></td>
-
                 <td>
-                    <?php
-                    $imageFile = "assets/uploads/" . $row['image'];
-                    if (!empty($row['image']) && file_exists(__DIR__ . "/" . $imageFile)) {
-                    ?>
-                        <img
-                            src="<?php echo htmlspecialchars($imageFile); ?>"
-                            class="product-image"
-                            alt="Product image"
-                        >
-                    <?php } else { ?>
-                        No Image
-                    <?php } ?>
+                    <div class="product-cell">
+                        <?php if ($hasImage) { ?>
+                            <img
+                                src="<?php echo htmlspecialchars($imageFile); ?>"
+                                class="product-thumb"
+                                alt="<?php echo htmlspecialchars($row['product_name']); ?>"
+                            >
+                        <?php } else { ?>
+                            <div class="product-thumb product-thumb-empty">No Image</div>
+                        <?php } ?>
+
+                        <div class="product-title"><?php echo htmlspecialchars($row['product_name']); ?></div>
+                    </div>
                 </td>
 
-                <td><?php echo htmlspecialchars($row['product_name']); ?></td>
-
-                <td><?php echo htmlspecialchars($row['category']); ?></td>
-
-                <td><?php echo htmlspecialchars($row['brand']); ?></td>
-
-                <td><?php echo $row['quantity']; ?></td>
-
-                <td>PHP <?php echo number_format((float) $row['price'], 2); ?></td>
+                <td class="product-brand-cell"><?php echo htmlspecialchars($row['brand']); ?></td>
 
                 <td>
-                    <?php if((int) $row['quantity'] > 0) { ?>
-                        <span class="badge bg-success">Available</span>
-                    <?php } else { ?>
-                        <span class="badge bg-danger">Sold Out</span>
-                    <?php } ?>
+                    <span class="soft-pill category-pill category-<?php echo htmlspecialchars($categoryKey); ?>">
+                        <?php echo htmlspecialchars($row['category']); ?>
+                    </span>
                 </td>
 
                 <td>
+                    <div class="stock-count stock-<?php echo $statusClass; ?>"><?php echo $quantity; ?></div>
+                    <div class="stock-label"><?php echo $stockText; ?></div>
+                </td>
+
+                <td class="price-cell">PHP <?php echo number_format((float) $row['price'], 2); ?></td>
+
+                <td>
+                    <span class="soft-pill status-pill status-<?php echo $statusClass; ?>">
+                        <?php echo $stockText; ?>
+                    </span>
+                </td>
+
+                <td class="actions-cell">
                     <button
                         type="button"
-                        class="btn btn-warning btn-sm"
+                        class="product-action-btn edit-action"
                         data-bs-toggle="modal"
                         data-bs-target="#editProductModal<?php echo (int) $row['id']; ?>"
+                        aria-label="Edit <?php echo htmlspecialchars($row['product_name']); ?>"
                     >
-                        Edit
+                        <svg viewBox="0 0 24 24" aria-hidden="true">
+                            <path d="M12 20h9"></path>
+                            <path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"></path>
+                        </svg>
+                    </button>
+
+                    <button
+                        type="button"
+                        class="product-action-btn view-action"
+                        data-bs-toggle="modal"
+                        data-bs-target="#viewProductModal<?php echo (int) $row['id']; ?>"
+                        aria-label="View <?php echo htmlspecialchars($row['product_name']); ?>"
+                    >
+                        <svg viewBox="0 0 24 24" aria-hidden="true">
+                            <path d="M2 12s3.5-6 10-6 10 6 10 6-3.5 6-10 6-10-6-10-6Z"></path>
+                            <circle cx="12" cy="12" r="3"></circle>
+                        </svg>
                     </button>
 
                     <a
                         href="delete.php?id=<?php echo $row['id']; ?>"
-                        class="btn btn-danger btn-sm"
+                        class="product-action-btn delete-action"
                         onclick="return confirm('Are you sure you want to delete this product?');"
+                        aria-label="Delete <?php echo htmlspecialchars($row['product_name']); ?>"
                     >
-                        Delete
+                        <svg viewBox="0 0 24 24" aria-hidden="true">
+                            <path d="M3 6h18"></path>
+                            <path d="M8 6V4h8v2"></path>
+                            <path d="M19 6l-1 14H6L5 6"></path>
+                            <path d="M10 11v6"></path>
+                            <path d="M14 11v6"></path>
+                        </svg>
                     </a>
+
+                    <div class="modal fade text-start" id="viewProductModal<?php echo (int) $row['id']; ?>" tabindex="-1" aria-labelledby="viewProductModalLabel<?php echo (int) $row['id']; ?>" aria-hidden="true">
+                        <div class="modal-dialog modal-dialog-centered">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <h5 class="modal-title" id="viewProductModalLabel<?php echo (int) $row['id']; ?>">Product Details</h5>
+                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                </div>
+
+                                <div class="modal-body">
+                                    <div class="product-detail-head">
+                                        <?php if ($hasImage) { ?>
+                                            <img src="<?php echo htmlspecialchars($imageFile); ?>" class="product-detail-image" alt="<?php echo htmlspecialchars($row['product_name']); ?>">
+                                        <?php } else { ?>
+                                            <div class="product-detail-image product-thumb-empty">No Image</div>
+                                        <?php } ?>
+                                        <div>
+                                            <h4><?php echo htmlspecialchars($row['product_name']); ?></h4>
+                                            <p><?php echo htmlspecialchars($row['brand']); ?></p>
+                                        </div>
+                                    </div>
+
+                                    <dl class="product-detail-list">
+                                        <div>
+                                            <dt>Brand</dt>
+                                            <dd><?php echo htmlspecialchars($row['brand']); ?></dd>
+                                        </div>
+                                        <div>
+                                            <dt>Category</dt>
+                                            <dd><?php echo htmlspecialchars($row['category']); ?></dd>
+                                        </div>
+                                        <div>
+                                            <dt>Stock</dt>
+                                            <dd><?php echo $quantity; ?> - <?php echo $stockText; ?></dd>
+                                        </div>
+                                        <div>
+                                            <dt>Price</dt>
+                                            <dd>PHP <?php echo number_format((float) $row['price'], 2); ?></dd>
+                                        </div>
+                                    </dl>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
 
                     <div class="modal fade text-start" id="editProductModal<?php echo (int) $row['id']; ?>" tabindex="-1" aria-labelledby="editProductModalLabel<?php echo (int) $row['id']; ?>" aria-hidden="true">
                         <div class="modal-dialog modal-dialog-centered">
@@ -238,7 +324,7 @@ if ($stockFilter === 'low') {
         <?php } ?>
         <?php } else { ?>
             <tr>
-                <td colspan="9" class="py-4">No products found.</td>
+                <td colspan="7" class="empty-products">No products found.</td>
             </tr>
         <?php } ?>
 
