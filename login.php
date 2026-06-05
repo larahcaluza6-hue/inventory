@@ -63,7 +63,9 @@ if (isset($_POST['login']) || isset($_POST['admin_login'])) {
         $onlyAdminId = $adminUser ? (int) $adminUser['id'] : 0;
         $canUseAdmin = $userRole === 'admin' && (int) $user['id'] === $onlyAdminId;
 
-        if ($isAdminLogin && !$canUseAdmin) {
+        if (!$isAdminLogin && $userRole === 'admin') {
+            $error = "Admin accounts must use Admin login.";
+        } elseif ($isAdminLogin && !$canUseAdmin) {
             $admin_error = "Only the main administrator account can access admin login.";
         } else {
             $_SESSION['user_id'] = $user['id'];
@@ -216,24 +218,6 @@ if (isset($_POST['login']) || isset($_POST['admin_login'])) {
     </div>
 </div>
 
-<script>
-document.querySelectorAll('.login-password').forEach(function (passwordInput) {
-    const toggle = document.createElement('button');
-    toggle.type = 'button';
-    toggle.className = 'auth-password-toggle';
-    toggle.setAttribute('aria-label', 'Show password');
-    toggle.setAttribute('aria-pressed', 'false');
-    toggle.innerHTML = '<svg class="auth-eye-icon auth-eye-off-icon" aria-hidden="true" viewBox="0 0 24 24"><path d="M3 3l18 18"></path><path d="M10.6 10.6a2 2 0 0 0 2.8 2.8"></path><path d="M9.9 4.4A9.5 9.5 0 0 1 12 4c5 0 8.7 4.1 10 8a13.1 13.1 0 0 1-3 4.6"></path><path d="M6.5 6.7A13.4 13.4 0 0 0 2 12c1.3 3.9 5 8 10 8a9.7 9.7 0 0 0 4.1-.9"></path></svg><svg class="auth-eye-icon auth-eye-on-icon" aria-hidden="true" viewBox="0 0 24 24"><path d="M2 12s3.7-7 10-7 10 7 10 7-3.7 7-10 7S2 12 2 12z"></path><circle cx="12" cy="12" r="3"></circle></svg>';
-    passwordInput.parentElement.appendChild(toggle);
-
-    toggle.addEventListener('click', function () {
-        const isPassword = passwordInput.type === 'password';
-        passwordInput.type = isPassword ? 'text' : 'password';
-        toggle.setAttribute('aria-label', isPassword ? 'Hide password' : 'Show password');
-        toggle.setAttribute('aria-pressed', isPassword ? 'true' : 'false');
-    });
-});
-</script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <?php if ($modalToOpen !== '') { ?>
 <script>

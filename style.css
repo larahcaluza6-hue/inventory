@@ -301,55 +301,6 @@ canvas{
     color:#9ca3af;
 }
 
-.auth-password-toggle{
-    width:40px;
-    height:40px;
-    display:grid;
-    place-items:center;
-    position:relative;
-    border:0;
-    border-radius:10px;
-    background:transparent;
-    color:#46515f;
-    padding:0;
-    line-height:1;
-    transition:background .2s ease, color .2s ease, transform .2s ease;
-}
-
-.auth-eye-icon{
-    width:23px;
-    height:23px;
-    display:block;
-    fill:none;
-    stroke:currentColor;
-    stroke-width:2;
-    stroke-linecap:round;
-    stroke-linejoin:round;
-}
-
-.auth-eye-on-icon{
-    display:none;
-}
-
-.auth-password-toggle[aria-pressed="true"] .auth-eye-off-icon{
-    display:none;
-}
-
-.auth-password-toggle[aria-pressed="true"] .auth-eye-on-icon{
-    display:block;
-}
-
-.auth-password-toggle:hover{
-    background:#edf7ed;
-    color:#4d9a3f;
-    transform:translateY(-1px);
-}
-
-.auth-password-toggle:focus-visible{
-    outline:3px solid rgba(77,154,63,.24);
-    outline-offset:2px;
-}
-
 .auth-row{
     display:flex;
     justify-content:space-between;
