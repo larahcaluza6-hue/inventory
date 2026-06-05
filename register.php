@@ -3,8 +3,8 @@ include 'db.php';
 
 if(isset($_POST['register'])){
 
-    $fullname = $_POST['fullname'];
-    $email = $_POST['email'];
+    $fullname = mysqli_real_escape_string($conn, $_POST['fullname']);
+    $email = mysqli_real_escape_string($conn, $_POST['email']);
     $password = password_hash($_POST['password'], PASSWORD_DEFAULT);
     $userCountQuery = mysqli_query($conn, "SELECT COUNT(*) AS total FROM users");
     $userCount = mysqli_fetch_assoc($userCountQuery);

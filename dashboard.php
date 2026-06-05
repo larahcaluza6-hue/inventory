@@ -16,7 +16,7 @@ $market_stock_data = mysqli_fetch_assoc($market_stock_query);
 $sold_out_query = mysqli_query($conn, "SELECT COUNT(*) as total FROM products WHERE user_id = $userId AND quantity <= 0");
 $sold_out_data = mysqli_fetch_assoc($sold_out_query);
 
-$low_stock_query = mysqli_query($conn, "SELECT COUNT(*) as total FROM products WHERE user_id = $userId AND quantity < 10");
+$low_stock_query = mysqli_query($conn, "SELECT COUNT(*) as total FROM products WHERE user_id = $userId AND quantity > 0 AND quantity < 10");
 $low_stock_data = mysqli_fetch_assoc($low_stock_query);
 
 $currentYear = (int) date('Y');

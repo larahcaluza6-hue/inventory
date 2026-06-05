@@ -2,6 +2,7 @@
 include 'db.php';
 include 'auth.php';
 
+$userId = (int) $_SESSION['user_id'];
 $search = isset($_GET['search']) ? trim($_GET['search']) : '';
 $stockFilter = isset($_GET['stock']) ? $_GET['stock'] : '';
 
@@ -9,7 +10,9 @@ if ($stockFilter === 'low') {
     $result = mysqli_query(
         $conn,
         "SELECT * FROM products
-         WHERE quantity > 0 AND quantity < 10
+         WHERE user_id = $userId
+           AND quantity > 0
+           AND quantity < 10
          ORDER BY quantity ASC, id ASC"
     );
 } elseif ($search !== '') {
@@ -17,16 +20,19 @@ if ($stockFilter === 'low') {
     $result = mysqli_query(
         $conn,
         "SELECT * FROM products
-         WHERE product_name LIKE '%$safeSearch%'
-            OR category LIKE '%$safeSearch%'
-            OR brand LIKE '%$safeSearch%'
-            OR status LIKE '%$safeSearch%'
-            OR quantity LIKE '%$safeSearch%'
-            OR price LIKE '%$safeSearch%'
+         WHERE user_id = $userId
+           AND (
+                product_name LIKE '%$safeSearch%'
+                OR category LIKE '%$safeSearch%'
+                OR brand LIKE '%$safeSearch%'
+                OR status LIKE '%$safeSearch%'
+                OR quantity LIKE '%$safeSearch%'
+                OR price LIKE '%$safeSearch%'
+           )
          ORDER BY id ASC"
     );
 } else {
-    $result = mysqli_query($conn, "SELECT * FROM products ORDER BY id ASC");
+    $result = mysqli_query($conn, "SELECT * FROM products WHERE user_id = $userId ORDER BY id ASC");
 }
 ?>
 
@@ -51,6 +57,15 @@ if ($stockFilter === 'low') {
         <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addProductModal">
             Add Product Stock         
         </button>
+    </div>
+
+    <div class="products-filter-actions mb-3">
+        <a href="products.php" class="btn <?php echo $stockFilter === 'low' ? 'btn-outline-secondary' : 'btn-secondary'; ?>">
+            All Products
+        </a>
+        <a href="products.php?stock=low" class="btn <?php echo $stockFilter === 'low' ? 'btn-warning' : 'btn-outline-warning'; ?>">
+            Low Stock
+        </a>
     </div>
 
     <?php if (isset($_GET['duplicate'])) { ?>

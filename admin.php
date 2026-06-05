@@ -24,9 +24,36 @@ $summaryResult = mysqli_query(
         (SELECT COUNT(*) FROM users) AS users_total,
         (SELECT COUNT(*) FROM users WHERE role = 'admin') AS admins_total,
         (SELECT COUNT(*) FROM products) AS products_total,
-        (SELECT COALESCE(SUM(quantity), 0) FROM products) AS stock_total"
+        (SELECT COALESCE(SUM(quantity), 0) FROM products) AS stock_total,
+        (SELECT COUNT(*) FROM market_transactions) AS transactions_total,
+        (SELECT COUNT(*) FROM login_history) AS logins_total"
 );
 $summary = mysqli_fetch_assoc($summaryResult);
+
+$transactionsResult = mysqli_query(
+    $conn,
+    "SELECT
+        mt.id,
+        mt.quantity,
+        mt.transaction_type,
+        mt.created_at,
+        p.product_name,
+        users.fullname,
+        users.email
+     FROM market_transactions mt
+     LEFT JOIN products p ON p.id = mt.product_id
+     LEFT JOIN users ON users.id = mt.user_id
+     ORDER BY mt.created_at DESC, mt.id DESC
+     LIMIT 100"
+);
+
+$loginHistoryResult = mysqli_query(
+    $conn,
+    "SELECT *
+     FROM login_history
+     ORDER BY created_at DESC, id DESC
+     LIMIT 100"
+);
 ?>
 
 <!DOCTYPE html>
@@ -78,6 +105,20 @@ $summary = mysqli_fetch_assoc($summaryResult);
                 <h1><?php echo (int) $summary['stock_total']; ?></h1>
             </div>
         </div>
+
+        <div class="col-lg-3 col-sm-6">
+            <div class="card-box blue">
+                <h5>Transactions</h5>
+                <h1><?php echo (int) $summary['transactions_total']; ?></h1>
+            </div>
+        </div>
+
+        <div class="col-lg-3 col-sm-6">
+            <div class="card-box green">
+                <h5>Login Logs</h5>
+                <h1><?php echo (int) $summary['logins_total']; ?></h1>
+            </div>
+        </div>
     </div>
 
     <div class="admin-panel">
@@ -124,6 +165,104 @@ $summary = mysqli_fetch_assoc($summaryResult);
                     <?php } else { ?>
                         <tr>
                             <td colspan="6" class="empty-products">No users found.</td>
+                        </tr>
+                    <?php } ?>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="admin-panel">
+        <div class="admin-panel-header">
+            <h3>All Transactions</h3>
+        </div>
+
+        <div class="products-table-shell">
+            <table class="products-table admin-monitor-table">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>User</th>
+                        <th>Email</th>
+                        <th>Product</th>
+                        <th>Quantity</th>
+                        <th>Transaction</th>
+                        <th>Date</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    <?php if (mysqli_num_rows($transactionsResult) > 0) { ?>
+                        <?php $transactionNumber = 1; ?>
+                        <?php while ($transaction = mysqli_fetch_assoc($transactionsResult)) { ?>
+                            <tr>
+                                <td class="id-cell"><?php echo $transactionNumber; ?></td>
+                                <td><?php echo htmlspecialchars($transaction['fullname'] ?? 'Unknown User'); ?></td>
+                                <td><?php echo htmlspecialchars($transaction['email'] ?? ''); ?></td>
+                                <td><?php echo htmlspecialchars($transaction['product_name'] ?? 'Deleted Product'); ?></td>
+                                <td><?php echo (int) $transaction['quantity']; ?></td>
+                                <td>
+                                    <span class="soft-pill category-pill">
+                                        <?php echo htmlspecialchars($transaction['transaction_type']); ?>
+                                    </span>
+                                </td>
+                                <td><?php echo htmlspecialchars($transaction['created_at']); ?></td>
+                            </tr>
+                            <?php $transactionNumber++; ?>
+                        <?php } ?>
+                    <?php } else { ?>
+                        <tr>
+                            <td colspan="7" class="empty-products">No transactions found.</td>
+                        </tr>
+                    <?php } ?>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="admin-panel">
+        <div class="admin-panel-header">
+            <h3>Login and Logout History</h3>
+        </div>
+
+        <div class="products-table-shell">
+            <table class="products-table admin-monitor-table">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>User</th>
+                        <th>Email</th>
+                        <th>Role</th>
+                        <th>Action</th>
+                        <th>Date</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    <?php if (mysqli_num_rows($loginHistoryResult) > 0) { ?>
+                        <?php $historyNumber = 1; ?>
+                        <?php while ($history = mysqli_fetch_assoc($loginHistoryResult)) { ?>
+                            <tr>
+                                <td class="id-cell"><?php echo $historyNumber; ?></td>
+                                <td><?php echo htmlspecialchars($history['fullname']); ?></td>
+                                <td><?php echo htmlspecialchars($history['email']); ?></td>
+                                <td>
+                                    <span class="soft-pill <?php echo $history['role'] === 'admin' ? 'status-success' : 'category-pill'; ?>">
+                                        <?php echo htmlspecialchars(ucfirst($history['role'])); ?>
+                                    </span>
+                                </td>
+                                <td>
+                                    <span class="soft-pill <?php echo $history['action'] === 'Login' ? 'status-success' : 'status-warning'; ?>">
+                                        <?php echo htmlspecialchars($history['action']); ?>
+                                    </span>
+                                </td>
+                                <td><?php echo htmlspecialchars($history['created_at']); ?></td>
+                            </tr>
+                            <?php $historyNumber++; ?>
+                        <?php } ?>
+                    <?php } else { ?>
+                        <tr>
+                            <td colspan="6" class="empty-products">No login history found.</td>
                         </tr>
                     <?php } ?>
                 </tbody>
