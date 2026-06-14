@@ -1007,6 +1007,123 @@ canvas{
     margin-top:14px;
 }
 
+.recent-stock-panel{
+    margin:6px 0 18px;
+    background:white;
+    border:1px solid #e6eaf0;
+    border-radius:8px;
+    box-shadow:0 10px 30px rgba(15,23,42,.04);
+    overflow:hidden;
+}
+
+.recent-stock-header{
+    min-height:52px;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:16px;
+    padding:14px 20px;
+    border-bottom:1px solid #edf2f7;
+}
+
+.recent-stock-header h3{
+    margin:0;
+    color:#111827;
+    font-size:16px;
+    font-weight:800;
+}
+
+.recent-stock-view{
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    min-height:30px;
+    padding:0 14px;
+    border:1px solid #3b82f6;
+    border-radius:7px;
+    color:#2563eb;
+    font-size:12px;
+    font-weight:800;
+    text-decoration:none;
+}
+
+.recent-stock-view:hover{
+    background:#eff6ff;
+    color:#1d4ed8;
+}
+
+.recent-stock-table-wrap{
+    overflow-x:auto;
+    -webkit-overflow-scrolling:touch;
+}
+
+.recent-stock-table{
+    width:100%;
+    min-width:920px;
+    border-collapse:collapse;
+    margin:0;
+    color:#111827;
+}
+
+.recent-stock-table th,
+.recent-stock-table td{
+    padding:12px 20px;
+    border-bottom:1px solid #edf2f7;
+    font-size:13px;
+    vertical-align:middle;
+    white-space:nowrap;
+}
+
+.recent-stock-table thead th{
+    background:#f8fafc;
+    color:#475569;
+    font-size:12px;
+    font-weight:800;
+}
+
+.recent-stock-table tbody tr:last-child td{
+    border-bottom:0;
+}
+
+.recent-type-pill,
+.recent-status-pill{
+    display:inline-flex;
+    align-items:center;
+    min-height:24px;
+    border-radius:6px;
+    padding:5px 10px;
+    font-size:12px;
+    font-weight:800;
+    line-height:1;
+}
+
+.recent-type-pill.stock-in{
+    background:#dcfce7;
+    color:#059669;
+}
+
+.recent-type-pill.transfer{
+    background:#dbeafe;
+    color:#2563eb;
+}
+
+.recent-status-pill{
+    background:#dcfce7;
+    color:#059669;
+}
+
+.recent-reference{
+    color:#2563eb;
+    font-weight:800;
+}
+
+.recent-actions{
+    color:#475569;
+    font-weight:800;
+    text-align:center;
+    letter-spacing:2px;
+}
+
 .admin-panel-header{
     display:flex;
     align-items:center;

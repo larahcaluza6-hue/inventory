@@ -9,9 +9,16 @@ if (!isset($_GET['id'])) {
 
 $id = (int) $_GET['id'];
 $userId = (int) $_SESSION['user_id'];
+$isAdminUser = is_admin();
 
-$stmt = mysqli_prepare($conn, "SELECT * FROM products WHERE id = ? AND user_id = ?");
-mysqli_stmt_bind_param($stmt, "ii", $id, $userId);
+if ($isAdminUser) {
+    $stmt = mysqli_prepare($conn, "SELECT * FROM products WHERE id = ?");
+    mysqli_stmt_bind_param($stmt, "i", $id);
+} else {
+    $stmt = mysqli_prepare($conn, "SELECT * FROM products WHERE id = ? AND user_id = ?");
+    mysqli_stmt_bind_param($stmt, "ii", $id, $userId);
+}
+
 mysqli_stmt_execute($stmt);
 $result = mysqli_stmt_get_result($stmt);
 $product = mysqli_fetch_assoc($result);
@@ -41,21 +48,41 @@ if (isset($_POST['update'])) {
         $tmp = $_FILES['image']['tmp_name'];
         move_uploaded_file($tmp, $uploadDir . $image);
 
-        $update = mysqli_prepare(
-            $conn,
-            "UPDATE products
-             SET product_name = ?, category = ?, brand = ?, quantity = ?, price = ?, image = ?, status = ?
-             WHERE id = ? AND user_id = ?"
-        );
-        mysqli_stmt_bind_param($update, "sssidssii", $product_name, $category, $brand, $quantity, $price, $image, $status, $id, $userId);
+        if ($isAdminUser) {
+            $update = mysqli_prepare(
+                $conn,
+                "UPDATE products
+                 SET product_name = ?, category = ?, brand = ?, quantity = ?, price = ?, image = ?, status = ?
+                 WHERE id = ?"
+            );
+            mysqli_stmt_bind_param($update, "sssidssi", $product_name, $category, $brand, $quantity, $price, $image, $status, $id);
+        } else {
+            $update = mysqli_prepare(
+                $conn,
+                "UPDATE products
+                 SET product_name = ?, category = ?, brand = ?, quantity = ?, price = ?, image = ?, status = ?
+                 WHERE id = ? AND user_id = ?"
+            );
+            mysqli_stmt_bind_param($update, "sssidssii", $product_name, $category, $brand, $quantity, $price, $image, $status, $id, $userId);
+        }
     } else {
-        $update = mysqli_prepare(
-            $conn,
-            "UPDATE products
-             SET product_name = ?, category = ?, brand = ?, quantity = ?, price = ?, status = ?
-             WHERE id = ? AND user_id = ?"
-        );
-        mysqli_stmt_bind_param($update, "sssidsii", $product_name, $category, $brand, $quantity, $price, $status, $id, $userId);
+        if ($isAdminUser) {
+            $update = mysqli_prepare(
+                $conn,
+                "UPDATE products
+                 SET product_name = ?, category = ?, brand = ?, quantity = ?, price = ?, status = ?
+                 WHERE id = ?"
+            );
+            mysqli_stmt_bind_param($update, "sssidsi", $product_name, $category, $brand, $quantity, $price, $status, $id);
+        } else {
+            $update = mysqli_prepare(
+                $conn,
+                "UPDATE products
+                 SET product_name = ?, category = ?, brand = ?, quantity = ?, price = ?, status = ?
+                 WHERE id = ? AND user_id = ?"
+            );
+            mysqli_stmt_bind_param($update, "sssidsii", $product_name, $category, $brand, $quantity, $price, $status, $id, $userId);
+        }
     }
 
     mysqli_stmt_execute($update);

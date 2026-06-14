@@ -30,6 +30,22 @@ $summaryResult = mysqli_query(
 );
 $summary = mysqli_fetch_assoc($summaryResult);
 
+$recentTransactionsResult = mysqli_query(
+    $conn,
+    "SELECT
+        mt.id,
+        mt.quantity,
+        mt.transaction_type,
+        mt.created_at,
+        p.product_name,
+        users.fullname
+     FROM market_transactions mt
+     LEFT JOIN products p ON p.id = mt.product_id
+     LEFT JOIN users ON users.id = mt.user_id
+     ORDER BY mt.created_at DESC, mt.id DESC
+     LIMIT 5"
+);
+
 $transactionsResult = mysqli_query(
     $conn,
     "SELECT
@@ -121,6 +137,67 @@ $loginHistoryResult = mysqli_query(
         </div>
     </div>
 
+    <div class="recent-stock-panel">
+        <div class="recent-stock-header">
+            <h3>Recent Stock Transactions</h3>
+            <a href="#allTransactions" class="recent-stock-view">View All</a>
+        </div>
+
+        <div class="recent-stock-table-wrap">
+            <table class="recent-stock-table">
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>Type</th>
+                        <th>Reference</th>
+                        <th>Item</th>
+                        <th>Quantity</th>
+                        <th>Status</th>
+                        <th>User</th>
+                        <th aria-label="Actions"></th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    <?php if (mysqli_num_rows($recentTransactionsResult) > 0) { ?>
+                        <?php while ($recentTransaction = mysqli_fetch_assoc($recentTransactionsResult)) { ?>
+                            <?php
+                                $transactionType = $recentTransaction['transaction_type'];
+                                $typeClass = stripos($transactionType, 'stock') !== false ? 'stock-in' : 'transfer';
+                                $referencePrefix = stripos($transactionType, 'stock') !== false ? 'SI' : 'TR';
+                                $reference = $referencePrefix . '-' . date('Y', strtotime($recentTransaction['created_at'])) . '-' . str_pad((string) $recentTransaction['id'], 4, '0', STR_PAD_LEFT);
+                            ?>
+                            <tr>
+                                <td><?php echo date('M d, Y h:i A', strtotime($recentTransaction['created_at'])); ?></td>
+                                <td>
+                                    <span class="recent-type-pill <?php echo $typeClass; ?>">
+                                        <?php echo htmlspecialchars($transactionType); ?>
+                                    </span>
+                                </td>
+                                <td>
+                                    <span class="recent-reference">
+                                        <?php echo htmlspecialchars($reference); ?>
+                                    </span>
+                                </td>
+                                <td><?php echo htmlspecialchars($recentTransaction['product_name'] ?? 'Deleted Product'); ?></td>
+                                <td><?php echo (int) $recentTransaction['quantity']; ?></td>
+                                <td>
+                                    <span class="recent-status-pill">Completed</span>
+                                </td>
+                                <td><?php echo htmlspecialchars($recentTransaction['fullname'] ?? 'Unknown User'); ?></td>
+                                <td class="recent-actions">...</td>
+                            </tr>
+                        <?php } ?>
+                    <?php } else { ?>
+                        <tr>
+                            <td colspan="8" class="empty-products">No recent stock transactions found.</td>
+                        </tr>
+                    <?php } ?>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
     <div class="admin-panel">
         <div class="admin-panel-header">
             <h3>Users</h3>
@@ -172,7 +249,7 @@ $loginHistoryResult = mysqli_query(
         </div>
     </div>
 
-    <div class="admin-panel">
+    <div class="admin-panel" id="allTransactions">
         <div class="admin-panel-header">
             <h3>All Transactions</h3>
         </div>

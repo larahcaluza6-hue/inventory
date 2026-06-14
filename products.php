@@ -5,41 +5,78 @@ include 'auth.php';
 $search = isset($_GET['search']) ? trim($_GET['search']) : '';
 $stockFilter = isset($_GET['stock']) ? $_GET['stock'] : '';
 $userId = (int) $_SESSION['user_id'];
+$isAdminUser = is_admin();
 
 if ($stockFilter === 'low') {
-    $stmt = mysqli_prepare(
-        $conn,
-        "SELECT * FROM products
-         WHERE user_id = ?
-           AND quantity > 0
-           AND quantity < 10
-         ORDER BY quantity ASC, id ASC"
-    );
-    mysqli_stmt_bind_param($stmt, "i", $userId);
+    $query = "SELECT products.*, users.fullname AS owner_name
+              FROM products
+              LEFT JOIN users ON users.id = products.user_id
+              WHERE quantity > 0
+                AND quantity < 10";
+
+    if (!$isAdminUser) {
+        $query .= " AND products.user_id = ?";
+    }
+
+    $query .= " ORDER BY quantity ASC, products.id ASC";
+    $stmt = mysqli_prepare($conn, $query);
+
+    if (!$isAdminUser) {
+        mysqli_stmt_bind_param($stmt, "i", $userId);
+    }
+
     mysqli_stmt_execute($stmt);
     $result = mysqli_stmt_get_result($stmt);
 } elseif ($search !== '') {
     $searchTerm = '%' . $search . '%';
-    $stmt = mysqli_prepare(
-        $conn,
-        "SELECT * FROM products
-         WHERE user_id = ?
-           AND (
-                product_name LIKE ?
-             OR category LIKE ?
-             OR brand LIKE ?
-             OR status LIKE ?
-             OR quantity LIKE ?
-             OR price LIKE ?
-           )
-         ORDER BY id ASC"
-    );
-    mysqli_stmt_bind_param($stmt, "issssss", $userId, $searchTerm, $searchTerm, $searchTerm, $searchTerm, $searchTerm, $searchTerm);
+    $query = "SELECT products.*, users.fullname AS owner_name
+              FROM products
+              LEFT JOIN users ON users.id = products.user_id
+              WHERE (
+                    product_name LIKE ?
+                 OR category LIKE ?
+                 OR brand LIKE ?
+                 OR status LIKE ?
+                 OR quantity LIKE ?
+                 OR price LIKE ?
+              )";
+
+    if (!$isAdminUser) {
+        $query .= " AND products.user_id = ?";
+    }
+
+    $query .= " ORDER BY products.id ASC";
+    $stmt = mysqli_prepare($conn, $query);
+
+    if ($isAdminUser) {
+        mysqli_stmt_bind_param($stmt, "ssssss", $searchTerm, $searchTerm, $searchTerm, $searchTerm, $searchTerm, $searchTerm);
+    } else {
+        mysqli_stmt_bind_param($stmt, "ssssssi", $searchTerm, $searchTerm, $searchTerm, $searchTerm, $searchTerm, $searchTerm, $userId);
+    }
+
     mysqli_stmt_execute($stmt);
     $result = mysqli_stmt_get_result($stmt);
 } else {
-    $stmt = mysqli_prepare($conn, "SELECT * FROM products WHERE user_id = ? ORDER BY id ASC");
-    mysqli_stmt_bind_param($stmt, "i", $userId);
+    if ($isAdminUser) {
+        $stmt = mysqli_prepare(
+            $conn,
+            "SELECT products.*, users.fullname AS owner_name
+             FROM products
+             LEFT JOIN users ON users.id = products.user_id
+             ORDER BY products.id ASC"
+        );
+    } else {
+        $stmt = mysqli_prepare(
+            $conn,
+            "SELECT products.*, users.fullname AS owner_name
+             FROM products
+             LEFT JOIN users ON users.id = products.user_id
+             WHERE products.user_id = ?
+             ORDER BY products.id ASC"
+        );
+        mysqli_stmt_bind_param($stmt, "i", $userId);
+    }
+
     mysqli_stmt_execute($stmt);
     $result = mysqli_stmt_get_result($stmt);
 }
@@ -51,7 +88,7 @@ if ($stockFilter === 'low') {
     <title>Products</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="style.css?v=<?php echo filemtime('style.css'); ?>">
 </head>
 
 <body>
@@ -106,10 +143,14 @@ if ($stockFilter === 'low') {
 
         <thead>
             <tr>
-                <th>Product</th>
+                <th>Image</th>
+                <th>Product Name</th>
                 <th>Stock</th>
                 <th>Price</th>
                 <th>Category</th>
+                <?php if ($isAdminUser) { ?>
+                    <th>Owner</th>
+                <?php } ?>
                 <th>Status</th>
                 <th class="text-end">Actions</th>
             </tr>
@@ -140,22 +181,20 @@ if ($stockFilter === 'low') {
 
             <tr>
                 <td>
-                    <div class="product-cell">
-                        <?php if ($hasImage) { ?>
-                            <img
-                                src="<?php echo htmlspecialchars($imageFile); ?>"
-                                class="product-thumb"
-                                alt="<?php echo htmlspecialchars($row['product_name']); ?>"
-                            >
-                        <?php } else { ?>
-                            <div class="product-thumb product-thumb-empty">No Image</div>
-                        <?php } ?>
+                    <?php if ($hasImage) { ?>
+                        <img
+                            src="<?php echo htmlspecialchars($imageFile); ?>"
+                            class="product-thumb table-image-only"
+                            alt="<?php echo htmlspecialchars($row['product_name']); ?>"
+                        >
+                    <?php } else { ?>
+                        <div class="product-thumb product-thumb-empty table-image-only">No Image</div>
+                    <?php } ?>
+                </td>
 
-                        <div>
-                            <div class="product-title"><?php echo htmlspecialchars($row['product_name']); ?></div>
-                            <div class="product-brand"><?php echo htmlspecialchars($row['brand']); ?></div>
-                        </div>
-                    </div>
+                <td>
+                    <div class="product-title"><?php echo htmlspecialchars($row['product_name']); ?></div>
+                    <div class="product-brand"><?php echo htmlspecialchars($row['brand']); ?></div>
                 </td>
 
                 <td>
@@ -170,6 +209,10 @@ if ($stockFilter === 'low') {
                         <?php echo htmlspecialchars($row['category']); ?>
                     </span>
                 </td>
+
+                <?php if ($isAdminUser) { ?>
+                    <td><?php echo htmlspecialchars($row['owner_name'] ?? 'Unknown User'); ?></td>
+                <?php } ?>
 
                 <td>
                     <span class="soft-pill status-pill status-<?php echo $statusClass; ?>">
@@ -334,7 +377,7 @@ if ($stockFilter === 'low') {
         <?php } ?>
         <?php } else { ?>
             <tr>
-                <td colspan="6" class="empty-products">No products found.</td>
+                <td colspan="<?php echo $isAdminUser ? 8 : 7; ?>" class="empty-products">No products found.</td>
             </tr>
         <?php } ?>
 
