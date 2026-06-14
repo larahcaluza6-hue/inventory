@@ -25,10 +25,8 @@ if (isset($_POST['update'])) {
     $productName = $_POST['product_name'];
     $category = $_POST['category'];
     $brand = $_POST['brand'];
-    $quantity = (int) $_POST['quantity'];
     $marketQuantity = (int) $_POST['market_quantity'];
     $price = (float) $_POST['price'];
-    $status = $quantity > 0 ? "Available" : "Sold Out";
 
     if ($marketQuantity < 0) {
         $marketQuantity = 0;
@@ -49,18 +47,18 @@ if (isset($_POST['update'])) {
         $update = mysqli_prepare(
             $conn,
             "UPDATE products
-             SET product_name = ?, category = ?, brand = ?, quantity = ?, market_quantity = ?, price = ?, image = ?, status = ?
+             SET product_name = ?, category = ?, brand = ?, market_quantity = ?, price = ?, image = ?
              WHERE id = ? AND user_id = ?"
         );
-        mysqli_stmt_bind_param($update, "sssiidssii", $productName, $category, $brand, $quantity, $marketQuantity, $price, $image, $status, $id, $userId);
+        mysqli_stmt_bind_param($update, "sssidsii", $productName, $category, $brand, $marketQuantity, $price, $image, $id, $userId);
     } else {
         $update = mysqli_prepare(
             $conn,
             "UPDATE products
-             SET product_name = ?, category = ?, brand = ?, quantity = ?, market_quantity = ?, price = ?, status = ?
+             SET product_name = ?, category = ?, brand = ?, market_quantity = ?, price = ?
              WHERE id = ? AND user_id = ?"
         );
-        mysqli_stmt_bind_param($update, "sssiidsii", $productName, $category, $brand, $quantity, $marketQuantity, $price, $status, $id, $userId);
+        mysqli_stmt_bind_param($update, "sssidii", $productName, $category, $brand, $marketQuantity, $price, $id, $userId);
     }
 
     mysqli_stmt_execute($update);

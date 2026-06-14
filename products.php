@@ -2,37 +2,46 @@
 include 'db.php';
 include 'auth.php';
 
-$userId = (int) $_SESSION['user_id'];
 $search = isset($_GET['search']) ? trim($_GET['search']) : '';
 $stockFilter = isset($_GET['stock']) ? $_GET['stock'] : '';
+$userId = (int) $_SESSION['user_id'];
 
 if ($stockFilter === 'low') {
-    $result = mysqli_query(
+    $stmt = mysqli_prepare(
         $conn,
         "SELECT * FROM products
-         WHERE user_id = $userId
+         WHERE user_id = ?
            AND quantity > 0
            AND quantity < 10
          ORDER BY quantity ASC, id ASC"
     );
+    mysqli_stmt_bind_param($stmt, "i", $userId);
+    mysqli_stmt_execute($stmt);
+    $result = mysqli_stmt_get_result($stmt);
 } elseif ($search !== '') {
-    $safeSearch = mysqli_real_escape_string($conn, $search);
-    $result = mysqli_query(
+    $searchTerm = '%' . $search . '%';
+    $stmt = mysqli_prepare(
         $conn,
         "SELECT * FROM products
-         WHERE user_id = $userId
+         WHERE user_id = ?
            AND (
-                product_name LIKE '%$safeSearch%'
-                OR category LIKE '%$safeSearch%'
-                OR brand LIKE '%$safeSearch%'
-                OR status LIKE '%$safeSearch%'
-                OR quantity LIKE '%$safeSearch%'
-                OR price LIKE '%$safeSearch%'
+                product_name LIKE ?
+             OR category LIKE ?
+             OR brand LIKE ?
+             OR status LIKE ?
+             OR quantity LIKE ?
+             OR price LIKE ?
            )
          ORDER BY id ASC"
     );
+    mysqli_stmt_bind_param($stmt, "issssss", $userId, $searchTerm, $searchTerm, $searchTerm, $searchTerm, $searchTerm, $searchTerm);
+    mysqli_stmt_execute($stmt);
+    $result = mysqli_stmt_get_result($stmt);
 } else {
-    $result = mysqli_query($conn, "SELECT * FROM products WHERE user_id = $userId ORDER BY id ASC");
+    $stmt = mysqli_prepare($conn, "SELECT * FROM products WHERE user_id = ? ORDER BY id ASC");
+    mysqli_stmt_bind_param($stmt, "i", $userId);
+    mysqli_stmt_execute($stmt);
+    $result = mysqli_stmt_get_result($stmt);
 }
 ?>
 
@@ -42,7 +51,7 @@ if ($stockFilter === 'low') {
     <title>Products</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="style.css?v=<?php echo filemtime('style.css'); ?>">
+    <link rel="stylesheet" href="style.css">
 </head>
 
 <body>
@@ -85,7 +94,6 @@ if ($stockFilter === 'low') {
         <button type="submit" class="btn btn-primary search-icon-btn" id="searchToggle" aria-label="Search">
             &#128269;
         </button>
-
         <?php if ($search !== '') { ?>
             <a href="products.php" class="btn btn-secondary">
                 Back
@@ -94,15 +102,14 @@ if ($stockFilter === 'low') {
     </form>
 
     <div class="products-table-shell">
-    <table class="products-table product-list-table">
+    <table class="products-table">
 
         <thead>
             <tr>
                 <th>Product</th>
-                <th>Brand</th>
-                <th>Category</th>
                 <th>Stock</th>
                 <th>Price</th>
+                <th>Category</th>
                 <th>Status</th>
                 <th class="text-end">Actions</th>
             </tr>
@@ -126,7 +133,7 @@ if ($stockFilter === 'low') {
                     $statusClass = 'warning';
                 }
 
-                $categoryKey = preg_replace('/[^a-z0-9]+/', '-', strtolower($row['category']));
+                $categoryKey = preg_replace('/[^a-z0-9]+/', '', strtolower($row['category']));
                 $imageFile = "assets/uploads/" . $row['image'];
                 $hasImage = !empty($row['image']) && file_exists(__DIR__ . "/" . $imageFile);
             ?>
@@ -144,16 +151,11 @@ if ($stockFilter === 'low') {
                             <div class="product-thumb product-thumb-empty">No Image</div>
                         <?php } ?>
 
-                        <div class="product-title"><?php echo htmlspecialchars($row['product_name']); ?></div>
+                        <div>
+                            <div class="product-title"><?php echo htmlspecialchars($row['product_name']); ?></div>
+                            <div class="product-brand"><?php echo htmlspecialchars($row['brand']); ?></div>
+                        </div>
                     </div>
-                </td>
-
-                <td class="product-brand-cell"><?php echo htmlspecialchars($row['brand']); ?></td>
-
-                <td>
-                    <span class="soft-pill category-pill category-<?php echo htmlspecialchars($categoryKey); ?>">
-                        <?php echo htmlspecialchars($row['category']); ?>
-                    </span>
                 </td>
 
                 <td>
@@ -162,6 +164,12 @@ if ($stockFilter === 'low') {
                 </td>
 
                 <td class="price-cell">PHP <?php echo number_format((float) $row['price'], 2); ?></td>
+
+                <td>
+                    <span class="soft-pill category-pill category-<?php echo htmlspecialchars($categoryKey); ?>">
+                        <?php echo htmlspecialchars($row['category']); ?>
+                    </span>
+                </td>
 
                 <td>
                     <span class="soft-pill status-pill status-<?php echo $statusClass; ?>">
@@ -233,10 +241,6 @@ if ($stockFilter === 'low') {
                                     </div>
 
                                     <dl class="product-detail-list">
-                                        <div>
-                                            <dt>Brand</dt>
-                                            <dd><?php echo htmlspecialchars($row['brand']); ?></dd>
-                                        </div>
                                         <div>
                                             <dt>Category</dt>
                                             <dd><?php echo htmlspecialchars($row['category']); ?></dd>
@@ -330,7 +334,7 @@ if ($stockFilter === 'low') {
         <?php } ?>
         <?php } else { ?>
             <tr>
-                <td colspan="7" class="empty-products">No products found.</td>
+                <td colspan="6" class="empty-products">No products found.</td>
             </tr>
         <?php } ?>
 

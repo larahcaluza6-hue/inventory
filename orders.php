@@ -93,10 +93,10 @@ if ($search !== '') {
     <table class="products-table market-products-table compact-market-table">
         <thead>
             <tr>
-                <th>Product</th>
+                <th>Image</th>
+                <th>Product Name</th>
                 <th>Category</th>
-                <th>Product Stock</th>
-                <th>Market</th>
+                <th>Market Stock</th>
                 <th>Price</th>
                 <th>Status</th>
                 <th class="text-end">Actions</th>
@@ -108,15 +108,14 @@ if ($search !== '') {
             <?php $displayId = 1; ?>
             <?php while ($row = mysqli_fetch_assoc($products)) { ?>
                 <?php
-                $quantity = (int) $row['quantity'];
                 $marketQuantity = (int) $row['market_quantity'];
                 $stockText = 'In Stock';
                 $statusClass = 'success';
 
-                if ($quantity === 0) {
+                if ($marketQuantity === 0) {
                     $stockText = 'Out of Stock';
                     $statusClass = 'danger';
-                } elseif ($quantity < 10) {
+                } elseif ($marketQuantity < 10) {
                     $stockText = 'Low Stock';
                     $statusClass = 'warning';
                 }
@@ -128,22 +127,20 @@ if ($search !== '') {
 
                 <tr>
                     <td>
-                        <div class="product-cell">
-                            <?php if ($hasImage) { ?>
-                                <img
-                                    src="<?php echo htmlspecialchars($imageFile); ?>"
-                                    class="product-thumb"
-                                    alt="<?php echo htmlspecialchars($row['product_name']); ?>"
-                                >
-                            <?php } else { ?>
-                                <div class="product-thumb product-thumb-empty">No Image</div>
-                            <?php } ?>
+                        <?php if ($hasImage) { ?>
+                            <img
+                                src="<?php echo htmlspecialchars($imageFile); ?>"
+                                class="product-thumb"
+                                alt="<?php echo htmlspecialchars($row['product_name']); ?>"
+                            >
+                        <?php } else { ?>
+                            <div class="product-thumb product-thumb-empty">No Image</div>
+                        <?php } ?>
+                    </td>
 
-                            <div>
-                                <div class="product-title"><?php echo htmlspecialchars($row['product_name']); ?></div>
-                                <div class="product-brand"><?php echo htmlspecialchars($row['brand']); ?></div>
-                            </div>
-                        </div>
+                    <td>
+                        <div class="product-title"><?php echo htmlspecialchars($row['product_name']); ?></div>
+                        <div class="product-brand"><?php echo htmlspecialchars($row['brand']); ?></div>
                     </td>
 
                     <td>
@@ -152,12 +149,7 @@ if ($search !== '') {
                         </span>
                     </td>
 
-                    <td>
-                        <div class="stock-count stock-<?php echo $statusClass; ?>"><?php echo $quantity; ?></div>
-                        <div class="stock-label"><?php echo $stockText; ?></div>
-                    </td>
-
-                    <td class="stock-count stock-success"><?php echo $marketQuantity; ?></td>
+                    <td class="stock-count stock-<?php echo $statusClass; ?>"><?php echo $marketQuantity; ?></td>
 
                     <td class="price-cell">PHP <?php echo number_format((float) $row['price'], 2); ?></td>
 
@@ -248,15 +240,6 @@ if ($search !== '') {
 
                                             <input
                                                 type="number"
-                                                name="quantity"
-                                                class="form-control mb-3"
-                                                placeholder="Product Stock"
-                                                value="<?php echo htmlspecialchars($row['quantity']); ?>"
-                                                required
-                                            >
-
-                                            <input
-                                                type="number"
                                                 name="market_quantity"
                                                 class="form-control mb-3"
                                                 min="0"
@@ -315,10 +298,6 @@ if ($search !== '') {
                                                 <dd><?php echo htmlspecialchars($row['category']); ?></dd>
                                             </div>
                                             <div>
-                                                <dt>Product Stock</dt>
-                                                <dd><?php echo $quantity; ?> - <?php echo $stockText; ?></dd>
-                                            </div>
-                                            <div>
                                                 <dt>Market Stock</dt>
                                                 <dd><?php echo $marketQuantity; ?></dd>
                                             </div>
@@ -361,7 +340,6 @@ if ($search !== '') {
                         <?php while ($availableProduct = mysqli_fetch_assoc($availableProducts)) { ?>
                             <option value="<?php echo (int) $availableProduct['id']; ?>">
                                 <?php echo htmlspecialchars($availableProduct['product_name']); ?>
-                                (Stock: <?php echo (int) $availableProduct['quantity']; ?>)
                             </option>
                         <?php } ?>
                     </select>

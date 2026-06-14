@@ -83,7 +83,6 @@ if (isset($_POST['store'])) {
             <?php while ($availableProduct = mysqli_fetch_assoc($availableProducts)) { ?>
                 <option value="<?php echo (int) $availableProduct['id']; ?>">
                     <?php echo htmlspecialchars($availableProduct['product_name']); ?>
-                    (Stock: <?php echo (int) $availableProduct['quantity']; ?>)
                 </option>
             <?php } ?>
         </select>

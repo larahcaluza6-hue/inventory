@@ -127,12 +127,10 @@ if (isset($_POST['login']) || isset($_POST['admin_login'])) {
 
                 <form method="POST" class="auth-form">
                     <div class="auth-field">
-                        <span class="auth-field-icon" aria-hidden="true">@</span>
                         <input type="email" name="email" class="form-control" placeholder="Email" required>
                     </div>
 
                     <div class="auth-field">
-                        <span class="auth-field-icon" aria-hidden="true">*</span>
                         <input type="password" name="password" class="form-control login-password" placeholder="Password" required>
                     </div>
 
@@ -164,17 +162,14 @@ if (isset($_POST['login']) || isset($_POST['admin_login'])) {
 
                 <form method="POST" class="auth-form">
                     <div class="auth-field">
-                        <span class="auth-field-icon" aria-hidden="true">+</span>
                         <input type="text" name="fullname" class="form-control" placeholder="Full Name" required>
                     </div>
 
                     <div class="auth-field">
-                        <span class="auth-field-icon" aria-hidden="true">@</span>
                         <input type="email" name="email" class="form-control" placeholder="Email" required>
                     </div>
 
                     <div class="auth-field">
-                        <span class="auth-field-icon" aria-hidden="true">*</span>
                         <input type="password" name="password" class="form-control login-password" placeholder="Password" required>
                     </div>
 
@@ -202,13 +197,15 @@ if (isset($_POST['login']) || isset($_POST['admin_login'])) {
 
                 <form method="POST" class="auth-form">
                     <div class="auth-field">
-                        <span class="auth-field-icon" aria-hidden="true">@</span>
                         <input type="email" name="email" class="form-control" placeholder="Admin Email" required>
                     </div>
 
                     <div class="auth-field">
-                        <span class="auth-field-icon" aria-hidden="true">*</span>
                         <input type="password" name="password" class="form-control login-password" placeholder="Admin Password" required>
+                    </div>
+
+                    <div class="auth-row auth-row-end">
+                        <a href="forgot_password.php" class="auth-muted-link">Forgot Password?</a>
                     </div>
 
                     <button type="submit" name="admin_login" class="auth-submit">Administrator Login</button>

@@ -47,17 +47,14 @@ if(isset($_POST['register'])){
 
         <form method="POST" class="auth-form">
             <div class="auth-field">
-                <span class="auth-field-icon" aria-hidden="true">♙</span>
                 <input type="text" name="fullname" class="form-control" placeholder="Full Name" required>
             </div>
 
             <div class="auth-field">
-                <span class="auth-field-icon" aria-hidden="true">◎</span>
                 <input type="email" name="email" class="form-control" placeholder="Email" required>
             </div>
 
             <div class="auth-field">
-                <span class="auth-field-icon" aria-hidden="true">▣</span>
                 <input type="password" name="password" class="form-control" placeholder="Password" required>
             </div>
 
