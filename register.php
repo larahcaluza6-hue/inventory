@@ -5,16 +5,22 @@ if(isset($_POST['register'])){
 
     $fullname = mysqli_real_escape_string($conn, $_POST['fullname']);
     $email = mysqli_real_escape_string($conn, $_POST['email']);
-    $password = password_hash($_POST['password'], PASSWORD_DEFAULT);
-    $userCountQuery = mysqli_query($conn, "SELECT COUNT(*) AS total FROM users");
-    $userCount = mysqli_fetch_assoc($userCountQuery);
-    $role = (int) $userCount['total'] === 0 ? 'admin' : 'user';
+    $plainPassword = $_POST['password'];
 
-    mysqli_query($conn,
-    "INSERT INTO users(fullname,email,password,role)
-    VALUES('$fullname','$email','$password','$role')");
+    if (strlen($plainPassword) < 8 || strlen($plainPassword) > 12) {
+        $register_error = "Password must be 8 to 12 characters.";
+    } else {
+        $password = password_hash($plainPassword, PASSWORD_DEFAULT);
+        $userCountQuery = mysqli_query($conn, "SELECT COUNT(*) AS total FROM users");
+        $userCount = mysqli_fetch_assoc($userCountQuery);
+        $role = (int) $userCount['total'] === 0 ? 'admin' : 'user';
 
-    header("Location: login.php");
+        mysqli_query($conn,
+        "INSERT INTO users(fullname,email,password,role)
+        VALUES('$fullname','$email','$password','$role')");
+
+        header("Location: login.php");
+    }
 }
 ?>
 
@@ -45,6 +51,12 @@ if(isset($_POST['register'])){
         <h1>Sign up</h1>
         <p class="auth-subtitle">Create your account to manage inventory</p>
 
+        <?php if (isset($register_error)) { ?>
+            <div class="alert alert-danger">
+                <?php echo htmlspecialchars($register_error); ?>
+            </div>
+        <?php } ?>
+
         <form method="POST" class="auth-form">
             <div class="auth-field">
                 <input type="text" name="fullname" class="form-control" placeholder="Full Name" required>
@@ -55,7 +67,7 @@ if(isset($_POST['register'])){
             </div>
 
             <div class="auth-field">
-                <input type="password" name="password" class="form-control" placeholder="Password" required>
+                <input type="password" name="password" class="form-control" placeholder="Password" minlength="8" maxlength="12" required>
             </div>
 
             <button type="submit" name="register" class="auth-submit">

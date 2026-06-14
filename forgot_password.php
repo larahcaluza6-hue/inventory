@@ -11,8 +11,8 @@ if (isset($_POST['reset_password'])) {
 
     if ($newPassword !== $confirmPassword) {
         $error = 'Passwords do not match.';
-    } elseif (strlen($newPassword) < 6) {
-        $error = 'Password must be at least 6 characters.';
+    } elseif (strlen($newPassword) < 8 || strlen($newPassword) > 12) {
+        $error = 'Password must be 8 to 12 characters.';
     } else {
         $stmt = mysqli_prepare($conn, "SELECT id FROM users WHERE email = ? LIMIT 1");
         mysqli_stmt_bind_param($stmt, "s", $email);
@@ -78,11 +78,11 @@ if (isset($_POST['reset_password'])) {
             </div>
 
             <div class="auth-field">
-                <input type="password" name="new_password" class="form-control" placeholder="New Password" required>
+                <input type="password" name="new_password" class="form-control" placeholder="New Password" minlength="8" maxlength="12" required>
             </div>
 
             <div class="auth-field">
-                <input type="password" name="confirm_password" class="form-control" placeholder="Confirm Password" required>
+                <input type="password" name="confirm_password" class="form-control" placeholder="Confirm Password" minlength="8" maxlength="12" required>
             </div>
 
             <button type="submit" name="reset_password" class="auth-submit">

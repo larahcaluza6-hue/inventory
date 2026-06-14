@@ -18,14 +18,18 @@ function record_login_history($conn, $user, $role) {
 if (isset($_POST['register'])) {
     $fullname = mysqli_real_escape_string($conn, $_POST['fullname']);
     $email = mysqli_real_escape_string($conn, $_POST['email']);
-    $password = password_hash($_POST['password'], PASSWORD_DEFAULT);
+    $plainPassword = $_POST['password'];
 
     $existingUserQuery = mysqli_query($conn, "SELECT id FROM users WHERE email='$email'");
 
-    if ($existingUserQuery && mysqli_num_rows($existingUserQuery) > 0) {
+    if (strlen($plainPassword) < 8 || strlen($plainPassword) > 12) {
+        $register_error = "Password must be 8 to 12 characters.";
+        $modalToOpen = 'registerModal';
+    } elseif ($existingUserQuery && mysqli_num_rows($existingUserQuery) > 0) {
         $register_error = "Email is already registered.";
         $modalToOpen = 'registerModal';
     } else {
+        $password = password_hash($plainPassword, PASSWORD_DEFAULT);
         $userCountQuery = mysqli_query($conn, "SELECT COUNT(*) AS total FROM users");
         $userCount = mysqli_fetch_assoc($userCountQuery);
         $role = (int) $userCount['total'] === 0 ? 'admin' : 'user';
@@ -49,39 +53,47 @@ if (isset($_POST['login']) || isset($_POST['admin_login'])) {
     $isAdminLogin = isset($_POST['admin_login']);
     $modalToOpen = $isAdminLogin ? 'adminModal' : 'loginModal';
 
-    $query = mysqli_query(
-        $conn,
-        "SELECT * FROM users WHERE email='$email'"
-    );
-
-    $user = mysqli_fetch_assoc($query);
-
-    if ($user && password_verify($password, $user['password'])) {
-        $userRole = $user['role'] ?? 'user';
-        $adminQuery = mysqli_query($conn, "SELECT id FROM users WHERE role='admin' ORDER BY id ASC LIMIT 1");
-        $adminUser = mysqli_fetch_assoc($adminQuery);
-        $onlyAdminId = $adminUser ? (int) $adminUser['id'] : 0;
-        $canUseAdmin = $userRole === 'admin' && (int) $user['id'] === $onlyAdminId;
-
-        if (!$isAdminLogin && $userRole === 'admin') {
-            $error = "Admin accounts must use Admin login.";
-        } elseif ($isAdminLogin && !$canUseAdmin) {
-            $admin_error = "Only the main administrator account can access admin login.";
+    if (strlen($password) < 8 || strlen($password) > 12) {
+        if ($isAdminLogin) {
+            $admin_error = "Password must be 8 to 12 characters.";
         } else {
-            $_SESSION['user_id'] = $user['id'];
-            $_SESSION['fullname'] = $user['fullname'];
-            $_SESSION['role'] = $canUseAdmin ? 'admin' : 'user';
-
-            record_login_history($conn, $user, $_SESSION['role']);
-
-            header("Location: " . ($isAdminLogin ? "admin.php" : "dashboard.php"));
-            exit();
+            $error = "Password must be 8 to 12 characters.";
         }
     } else {
-        if ($isAdminLogin) {
-            $admin_error = "Invalid administrator email or password.";
+        $query = mysqli_query(
+            $conn,
+            "SELECT * FROM users WHERE email='$email'"
+        );
+
+        $user = mysqli_fetch_assoc($query);
+
+        if ($user && password_verify($password, $user['password'])) {
+            $userRole = $user['role'] ?? 'user';
+            $adminQuery = mysqli_query($conn, "SELECT id FROM users WHERE role='admin' ORDER BY id ASC LIMIT 1");
+            $adminUser = mysqli_fetch_assoc($adminQuery);
+            $onlyAdminId = $adminUser ? (int) $adminUser['id'] : 0;
+            $canUseAdmin = $userRole === 'admin' && (int) $user['id'] === $onlyAdminId;
+
+            if (!$isAdminLogin && $userRole === 'admin') {
+                $error = "Admin accounts must use Admin login.";
+            } elseif ($isAdminLogin && !$canUseAdmin) {
+                $admin_error = "Only the main administrator account can access admin login.";
+            } else {
+                $_SESSION['user_id'] = $user['id'];
+                $_SESSION['fullname'] = $user['fullname'];
+                $_SESSION['role'] = $canUseAdmin ? 'admin' : 'user';
+
+                record_login_history($conn, $user, $_SESSION['role']);
+
+                header("Location: " . ($isAdminLogin ? "admin.php" : "dashboard.php"));
+                exit();
+            }
         } else {
-            $error = "Invalid Email or Password";
+            if ($isAdminLogin) {
+                $admin_error = "Invalid administrator email or password.";
+            } else {
+                $error = "Invalid Email or Password";
+            }
         }
     }
 }
@@ -131,7 +143,7 @@ if (isset($_POST['login']) || isset($_POST['admin_login'])) {
                     </div>
 
                     <div class="auth-field">
-                        <input type="password" name="password" class="form-control login-password" placeholder="Password" required>
+                        <input type="password" name="password" class="form-control login-password" placeholder="Password" minlength="8" maxlength="12" required>
                     </div>
 
                     <div class="auth-row auth-row-end">
@@ -170,7 +182,7 @@ if (isset($_POST['login']) || isset($_POST['admin_login'])) {
                     </div>
 
                     <div class="auth-field">
-                        <input type="password" name="password" class="form-control login-password" placeholder="Password" required>
+                        <input type="password" name="password" class="form-control login-password" placeholder="Password" minlength="8" maxlength="12" required>
                     </div>
 
                     <button type="submit" name="register" class="auth-submit">Register</button>
@@ -201,7 +213,7 @@ if (isset($_POST['login']) || isset($_POST['admin_login'])) {
                     </div>
 
                     <div class="auth-field">
-                        <input type="password" name="password" class="form-control login-password" placeholder="Admin Password" required>
+                        <input type="password" name="password" class="form-control login-password" placeholder="Admin Password" minlength="8" maxlength="12" required>
                     </div>
 
                     <div class="auth-row auth-row-end">
@@ -221,6 +233,16 @@ if (isset($_POST['login']) || isset($_POST['admin_login'])) {
 new bootstrap.Modal(document.getElementById('<?php echo $modalToOpen; ?>')).show();
 </script>
 <?php } ?>
+<script>
+document.querySelectorAll('.login-password').forEach(function (field) {
+    field.addEventListener('input', function () {
+        if (field.value.length > 12) {
+            field.value = field.value.slice(0, 12);
+        }
+    });
+});
+
+</script>
 
 </body>
 </html>
