@@ -42,7 +42,7 @@ if ($stockFilter === 'low') {
     <title>Products</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="style.css?v=<?php echo filemtime('style.css'); ?>">
 </head>
 
 <body>
@@ -57,15 +57,6 @@ if ($stockFilter === 'low') {
         <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addProductModal">
             Add Product Stock         
         </button>
-    </div>
-
-    <div class="products-filter-actions mb-3">
-        <a href="products.php" class="btn <?php echo $stockFilter === 'low' ? 'btn-outline-secondary' : 'btn-secondary'; ?>">
-            All Products
-        </a>
-        <a href="products.php?stock=low" class="btn <?php echo $stockFilter === 'low' ? 'btn-warning' : 'btn-outline-warning'; ?>">
-            Low Stock
-        </a>
     </div>
 
     <?php if (isset($_GET['duplicate'])) { ?>
