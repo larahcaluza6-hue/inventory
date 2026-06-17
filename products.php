@@ -193,7 +193,7 @@ if ($stockFilter === 'low') {
                 <th>Image</th>
                 <th>Product Name</th>
                 <th>Brand</th>
-                <th>Stock</th>
+                <th>Stock (g)</th>
                 <th>Price</th>
                 <th>Category</th>
                 <?php if ($isAdminUser) { ?>
@@ -212,11 +212,11 @@ if ($stockFilter === 'low') {
             <?php $displayId = 1; ?>
             <?php while($row = mysqli_fetch_assoc($result)) { ?>
             <?php
-                $quantity = (int) $row['quantity'];
+                $quantity = (float) $row['quantity'];
                 $stockText = 'In Stock';
                 $statusClass = 'success';
 
-                if ($quantity === 0) {
+                if ($quantity <= 0) {
                     $stockText = 'Out of Stock';
                     $statusClass = 'danger';
                 } elseif ($quantity < 10) {
@@ -249,7 +249,7 @@ if ($stockFilter === 'low') {
                 <td><?php echo htmlspecialchars($row['brand']); ?></td>
 
                 <td>
-                    <div class="stock-count stock-<?php echo $statusClass; ?>"><?php echo $quantity; ?></div>
+                    <div class="stock-count stock-<?php echo $statusClass; ?>"><?php echo format_grams($quantity); ?></div>
                     <div class="stock-label"><?php echo $stockText; ?></div>
                 </td>
 
@@ -341,8 +341,8 @@ if ($stockFilter === 'low') {
                                             <dd><?php echo htmlspecialchars($row['category']); ?></dd>
                                         </div>
                                         <div>
-                                            <dt>Stock</dt>
-                                            <dd><?php echo $quantity; ?> - <?php echo $stockText; ?></dd>
+                                            <dt>Stock (g)</dt>
+                                            <dd><?php echo format_grams($quantity); ?> - <?php echo $stockText; ?></dd>
                                         </div>
                                         <div>
                                             <dt>Price</dt>
@@ -391,14 +391,19 @@ if ($stockFilter === 'low') {
                                             required
                                         >
 
-                                        <input
-                                            type="number"
-                                            name="quantity"
-                                            class="form-control mb-3"
-                                            placeholder="Quantity"
-                                            value="<?php echo htmlspecialchars($row['quantity']); ?>"
-                                            required
-                                        >
+                                        <div class="input-group mb-3">
+                                            <input
+                                                type="number"
+                                                step="0.01"
+                                                min="0"
+                                                name="quantity"
+                                                class="form-control"
+                                                placeholder="Quantity"
+                                                value="<?php echo htmlspecialchars($row['quantity']); ?>"
+                                                required
+                                            >
+                                            <span class="input-group-text">grams</span>
+                                        </div>
 
                                         <input
                                             type="number"
@@ -458,7 +463,10 @@ if ($stockFilter === 'low') {
 
                     <input type="text" name="brand" class="form-control mb-3" placeholder="Brand" required>
 
-                    <input type="number" name="quantity" class="form-control mb-3" placeholder="Quantity" required>
+                    <div class="input-group mb-3">
+                        <input type="number" step="0.01" min="0" name="quantity" class="form-control" placeholder="Quantity" required>
+                        <span class="input-group-text">grams</span>
+                    </div>
 
                     <input type="number" step="0.01" name="price" class="form-control mb-3" placeholder="Price" required>
 

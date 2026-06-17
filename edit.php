@@ -32,7 +32,7 @@ if (isset($_POST['update'])) {
     $product_name = $_POST['product_name'];
     $category = $_POST['category'];
     $brand = $_POST['brand'];
-    $quantity = (int) $_POST['quantity'];
+    $quantity = (float) $_POST['quantity'];
     $price = (float) $_POST['price'];
     $status = $quantity > 0 ? "Available" : "Sold Out";
 
@@ -55,7 +55,7 @@ if (isset($_POST['update'])) {
                  SET product_name = ?, category = ?, brand = ?, quantity = ?, price = ?, image = ?, status = ?
                  WHERE id = ?"
             );
-            mysqli_stmt_bind_param($update, "sssidssi", $product_name, $category, $brand, $quantity, $price, $image, $status, $id);
+            mysqli_stmt_bind_param($update, "sssddssi", $product_name, $category, $brand, $quantity, $price, $image, $status, $id);
         } else {
             $update = mysqli_prepare(
                 $conn,
@@ -63,7 +63,7 @@ if (isset($_POST['update'])) {
                  SET product_name = ?, category = ?, brand = ?, quantity = ?, price = ?, image = ?, status = ?
                  WHERE id = ? AND user_id = ?"
             );
-            mysqli_stmt_bind_param($update, "sssidssii", $product_name, $category, $brand, $quantity, $price, $image, $status, $id, $userId);
+            mysqli_stmt_bind_param($update, "sssddssii", $product_name, $category, $brand, $quantity, $price, $image, $status, $id, $userId);
         }
     } else {
         if ($isAdminUser) {
@@ -73,7 +73,7 @@ if (isset($_POST['update'])) {
                  SET product_name = ?, category = ?, brand = ?, quantity = ?, price = ?, status = ?
                  WHERE id = ?"
             );
-            mysqli_stmt_bind_param($update, "sssidsi", $product_name, $category, $brand, $quantity, $price, $status, $id);
+            mysqli_stmt_bind_param($update, "sssddsi", $product_name, $category, $brand, $quantity, $price, $status, $id);
         } else {
             $update = mysqli_prepare(
                 $conn,
@@ -81,7 +81,7 @@ if (isset($_POST['update'])) {
                  SET product_name = ?, category = ?, brand = ?, quantity = ?, price = ?, status = ?
                  WHERE id = ? AND user_id = ?"
             );
-            mysqli_stmt_bind_param($update, "sssidsii", $product_name, $category, $brand, $quantity, $price, $status, $id, $userId);
+            mysqli_stmt_bind_param($update, "sssddsii", $product_name, $category, $brand, $quantity, $price, $status, $id, $userId);
         }
     }
 
@@ -141,9 +141,11 @@ if (isset($_POST['update'])) {
 
         <input
             type="number"
+            step="0.01"
+            min="0"
             name="quantity"
             class="form-control mb-3"
-            placeholder="Quantity"
+            placeholder="Quantity (grams)"
             value="<?php echo htmlspecialchars($product['quantity']); ?>"
             required
         >

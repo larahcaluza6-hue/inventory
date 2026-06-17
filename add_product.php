@@ -8,7 +8,7 @@ if (isset($_POST['add'])) {
     $product_name = mysqli_real_escape_string($conn, $raw_product_name);
     $category = mysqli_real_escape_string($conn, $_POST['category']);
     $brand = mysqli_real_escape_string($conn, $_POST['brand']);
-    $quantity = (int) $_POST['quantity'];
+    $quantity = (float) $_POST['quantity'];
     $price = (float) $_POST['price'];
     $status = $quantity > 0 ? "Available" : "Sold Out";
 

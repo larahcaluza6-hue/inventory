@@ -146,7 +146,7 @@ if ($search !== '') {
                 <th>Product Name</th>
                 <th>Brand</th>
                 <th>Category</th>
-                <th>Market Stock</th>
+                <th>Market Stock (g)</th>
                 <th>Price</th>
                 <th>Status</th>
                 <?php if (!$isPrintView) { ?>
@@ -160,11 +160,11 @@ if ($search !== '') {
             <?php $displayId = 1; ?>
             <?php while ($row = mysqli_fetch_assoc($products)) { ?>
                 <?php
-                $marketQuantity = (int) $row['market_quantity'];
+                $marketQuantity = (float) $row['market_quantity'];
                 $stockText = 'In Stock';
                 $statusClass = 'success';
 
-                if ($marketQuantity === 0) {
+                if ($marketQuantity <= 0) {
                     $stockText = 'Out of Stock';
                     $statusClass = 'danger';
                 } elseif ($marketQuantity < 10) {
@@ -202,7 +202,7 @@ if ($search !== '') {
                         </span>
                     </td>
 
-                    <td class="stock-count stock-<?php echo $statusClass; ?>"><?php echo $marketQuantity; ?></td>
+                    <td class="stock-count stock-<?php echo $statusClass; ?>"><?php echo format_grams($marketQuantity); ?></td>
 
                     <td class="price-cell">PHP <?php echo number_format((float) $row['price'], 2); ?></td>
 
@@ -292,15 +292,19 @@ if ($search !== '') {
                                                 required
                                             >
 
-                                            <input
-                                                type="number"
-                                                name="market_quantity"
-                                                class="form-control mb-3"
-                                                min="0"
-                                                placeholder="Market Stock"
-                                                value="<?php echo htmlspecialchars($row['market_quantity']); ?>"
-                                                required
-                                            >
+                                            <div class="input-group mb-3">
+                                                <input
+                                                    type="number"
+                                                    step="0.01"
+                                                    name="market_quantity"
+                                                    class="form-control"
+                                                    min="0"
+                                                    placeholder="Market Stock"
+                                                    value="<?php echo htmlspecialchars($row['market_quantity']); ?>"
+                                                    required
+                                                >
+                                                <span class="input-group-text">grams</span>
+                                            </div>
 
                                             <input
                                                 type="number"
@@ -352,8 +356,8 @@ if ($search !== '') {
                                                 <dd><?php echo htmlspecialchars($row['category']); ?></dd>
                                             </div>
                                             <div>
-                                                <dt>Market Stock</dt>
-                                                <dd><?php echo $marketQuantity; ?></dd>
+                                                <dt>Market Stock (g)</dt>
+                                                <dd><?php echo format_grams($marketQuantity); ?></dd>
                                             </div>
                                             <div>
                                                 <dt>Price</dt>
@@ -400,14 +404,18 @@ if ($search !== '') {
                         <?php } ?>
                     </select>
 
-                    <input
-                        type="number"
-                        name="store_quantity"
-                        class="form-control"
-                        min="1"
-                        placeholder="Quantity"
-                        required
-                    >
+                    <div class="input-group">
+                        <input
+                            type="number"
+                            step="0.01"
+                            name="store_quantity"
+                            class="form-control"
+                            min="0.01"
+                            placeholder="Quantity"
+                            required
+                        >
+                        <span class="input-group-text">grams</span>
+                    </div>
                 </div>
 
                 <div class="modal-footer">

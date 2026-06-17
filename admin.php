@@ -117,8 +117,8 @@ $loginHistoryResult = mysqli_query(
 
         <div class="col-lg-3 col-sm-6">
             <div class="card-box green">
-                <h5>All Stock</h5>
-                <h1><?php echo (int) $summary['stock_total']; ?></h1>
+                <h5>All Stock (g)</h5>
+                <h1><?php echo format_grams($summary['stock_total']); ?></h1>
             </div>
         </div>
 
@@ -151,7 +151,7 @@ $loginHistoryResult = mysqli_query(
                         <th>Type</th>
                         <th>Reference</th>
                         <th>Item</th>
-                        <th>Quantity</th>
+                        <th>Quantity (g)</th>
                         <th>Status</th>
                         <th>User</th>
                         <th aria-label="Actions"></th>
@@ -180,7 +180,7 @@ $loginHistoryResult = mysqli_query(
                                     </span>
                                 </td>
                                 <td><?php echo htmlspecialchars($recentTransaction['product_name'] ?? 'Deleted Product'); ?></td>
-                                <td><?php echo (int) $recentTransaction['quantity']; ?></td>
+                                <td><?php echo format_grams($recentTransaction['quantity']); ?></td>
                                 <td>
                                     <span class="recent-status-pill">Completed</span>
                                 </td>
@@ -211,7 +211,7 @@ $loginHistoryResult = mysqli_query(
                         <th>Email</th>
                         <th>Role</th>
                         <th>Products</th>
-                        <th>Stock</th>
+                        <th>Stock (g)</th>
                         <th>Joined</th>
                     </tr>
                 </thead>
@@ -235,7 +235,7 @@ $loginHistoryResult = mysqli_query(
                                     </span>
                                 </td>
                                 <td><?php echo (int) $user['product_total']; ?></td>
-                                <td><?php echo (int) $user['stock_total']; ?></td>
+                                <td><?php echo format_grams($user['stock_total']); ?></td>
                                 <td><?php echo date('M d, Y', strtotime($user['created_at'])); ?></td>
                             </tr>
                         <?php } ?>
@@ -262,7 +262,7 @@ $loginHistoryResult = mysqli_query(
                         <th>User</th>
                         <th>Email</th>
                         <th>Product</th>
-                        <th>Quantity</th>
+                        <th>Quantity (g)</th>
                         <th>Transaction</th>
                         <th>Date</th>
                     </tr>
@@ -277,7 +277,7 @@ $loginHistoryResult = mysqli_query(
                                 <td><?php echo htmlspecialchars($transaction['fullname'] ?? 'Unknown User'); ?></td>
                                 <td><?php echo htmlspecialchars($transaction['email'] ?? ''); ?></td>
                                 <td><?php echo htmlspecialchars($transaction['product_name'] ?? 'Deleted Product'); ?></td>
-                                <td><?php echo (int) $transaction['quantity']; ?></td>
+                                <td><?php echo format_grams($transaction['quantity']); ?></td>
                                 <td>
                                     <span class="soft-pill category-pill">
                                         <?php echo htmlspecialchars($transaction['transaction_type']); ?>

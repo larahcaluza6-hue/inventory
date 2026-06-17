@@ -15,6 +15,12 @@ if(!$conn){
     die("Connection Failed: " . mysqli_connect_error());
 }
 
+if (!function_exists('format_grams')) {
+    function format_grams($value) {
+        return number_format((float) $value, 2) . ' g';
+    }
+}
+
 mysqli_query(
     $conn,
     "CREATE TABLE IF NOT EXISTS users (
@@ -53,8 +59,8 @@ mysqli_query(
         product_name VARCHAR(255) NOT NULL,
         category VARCHAR(255) NOT NULL,
         brand VARCHAR(255) NOT NULL,
-        quantity INT NOT NULL DEFAULT 0,
-        market_quantity INT NOT NULL DEFAULT 0,
+        quantity DECIMAL(10,2) NOT NULL DEFAULT 0.00,
+        market_quantity DECIMAL(10,2) NOT NULL DEFAULT 0.00,
         price DECIMAL(10,2) NOT NULL DEFAULT 0.00,
         image VARCHAR(255) NOT NULL DEFAULT '',
         status VARCHAR(50) NOT NULL DEFAULT 'Available',
@@ -65,8 +71,11 @@ mysqli_query(
 $marketStockColumn = mysqli_query($conn, "SHOW COLUMNS FROM products LIKE 'market_quantity'");
 
 if ($marketStockColumn && mysqli_num_rows($marketStockColumn) === 0) {
-    mysqli_query($conn, "ALTER TABLE products ADD market_quantity INT NOT NULL DEFAULT 0 AFTER quantity");
+    mysqli_query($conn, "ALTER TABLE products ADD market_quantity DECIMAL(10,2) NOT NULL DEFAULT 0.00 AFTER quantity");
 }
+
+mysqli_query($conn, "ALTER TABLE products MODIFY quantity DECIMAL(10,2) NOT NULL DEFAULT 0.00");
+mysqli_query($conn, "ALTER TABLE products MODIFY market_quantity DECIMAL(10,2) NOT NULL DEFAULT 0.00");
 
 $productUserColumn = mysqli_query($conn, "SHOW COLUMNS FROM products LIKE 'user_id'");
 
@@ -80,7 +89,7 @@ mysqli_query(
         id INT AUTO_INCREMENT PRIMARY KEY,
         user_id INT NULL,
         product_id INT NOT NULL,
-        quantity INT NOT NULL,
+        quantity DECIMAL(10,2) NOT NULL,
         transaction_type VARCHAR(50) NOT NULL DEFAULT 'Add Market Stock',
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     ) ENGINE=MyISAM DEFAULT CHARSET=utf8mb4"
@@ -91,6 +100,8 @@ $transactionUserColumn = mysqli_query($conn, "SHOW COLUMNS FROM market_transacti
 if ($transactionUserColumn && mysqli_num_rows($transactionUserColumn) === 0) {
     mysqli_query($conn, "ALTER TABLE market_transactions ADD user_id INT NULL AFTER id");
 }
+
+mysqli_query($conn, "ALTER TABLE market_transactions MODIFY quantity DECIMAL(10,2) NOT NULL");
 
 mysqli_query(
     $conn,

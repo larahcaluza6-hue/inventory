@@ -11,7 +11,7 @@ $availableProducts = mysqli_query(
 
 if (isset($_POST['store'])) {
     $productId = (int) $_POST['product_id'];
-    $storeQuantity = (int) $_POST['store_quantity'];
+    $storeQuantity = (float) $_POST['store_quantity'];
 
     if ($storeQuantity <= 0) {
         $error = 'Please enter a valid quantity.';
@@ -24,25 +24,25 @@ if (isset($_POST['store'])) {
 
         if (!$product) {
             $error = 'Product was not found.';
-        } elseif ((int) $product['quantity'] < $storeQuantity) {
+        } elseif ((float) $product['quantity'] < $storeQuantity) {
             $error = 'Not enough product stock available.';
         } else {
-            $newQuantity = (int) $product['quantity'] - $storeQuantity;
-            $newMarketQuantity = (int) $product['market_quantity'] + $storeQuantity;
+            $newQuantity = (float) $product['quantity'] - $storeQuantity;
+            $newMarketQuantity = (float) $product['market_quantity'] + $storeQuantity;
             $status = $newQuantity > 0 ? 'Available' : 'Sold Out';
 
             $update = mysqli_prepare(
                 $conn,
                 "UPDATE products SET quantity = ?, market_quantity = ?, status = ? WHERE id = ? AND user_id = ?"
             );
-            mysqli_stmt_bind_param($update, "iisii", $newQuantity, $newMarketQuantity, $status, $productId, $userId);
+            mysqli_stmt_bind_param($update, "ddsii", $newQuantity, $newMarketQuantity, $status, $productId, $userId);
             mysqli_stmt_execute($update);
 
             $transaction = mysqli_prepare(
                 $conn,
                 "INSERT INTO market_transactions (user_id, product_id, quantity, transaction_type) VALUES (?, ?, ?, 'Add Market Stock')"
             );
-            mysqli_stmt_bind_param($transaction, "iii", $userId, $productId, $storeQuantity);
+            mysqli_stmt_bind_param($transaction, "iid", $userId, $productId, $storeQuantity);
             mysqli_stmt_execute($transaction);
 
             header("Location: orders.php?added=1");
@@ -89,10 +89,11 @@ if (isset($_POST['store'])) {
 
         <input
             type="number"
+            step="0.01"
             name="store_quantity"
             class="form-control mb-3"
-            min="1"
-            placeholder="Quantity"
+            min="0.01"
+            placeholder="Quantity (grams)"
             required
         >
 

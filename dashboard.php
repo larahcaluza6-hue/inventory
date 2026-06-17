@@ -42,7 +42,7 @@ while ($sales_row = mysqli_fetch_assoc($sales_query)) {
     $saleMonth = (int) $sales_row['sale_month'];
 
     if (isset($salesData[$saleMonth])) {
-        $salesData[$saleMonth] = (int) $sales_row['total'];
+        $salesData[$saleMonth] = (float) $sales_row['total'];
     }
 }
 
@@ -91,15 +91,15 @@ $salesChartColors = array_map(
 
         <div class="col-lg-3 col-sm-6">
             <div class="card-box green">
-                <h5>Product Stock</h5>
-                <h1><?php echo (int) $available_data['total']; ?></h1>
+                <h5>Product Stock (g)</h5>
+                <h1><?php echo format_grams($available_data['total']); ?></h1>
             </div>
         </div>
 
         <div class="col-lg-3 col-sm-6">
             <div class="card-box blue">
-                <h5>Market Stock</h5>
-                <h1><?php echo (int) $market_stock_data['total']; ?></h1>
+                <h5>Market Stock (g)</h5>
+                <h1><?php echo format_grams($market_stock_data['total']); ?></h1>
             </div>
         </div>
 
@@ -161,7 +161,7 @@ new Chart(document.getElementById('salesByMonthChart'), {
             tooltip: {
                 callbacks: {
                     label: function (context) {
-                        return 'Sales: ' + context.parsed.y + ' (' + salesChartPercentages[context.dataIndex] + '%)';
+                        return 'Sales: ' + context.parsed.y.toFixed(2) + ' g (' + salesChartPercentages[context.dataIndex] + '%)';
                     }
                 }
             }
@@ -194,7 +194,7 @@ new Chart(document.getElementById('salesByMonthChart'), {
                 },
                 ticks: {
                     display: false,
-                    precision: 0
+                    precision: 2
                 }
             }
         }
