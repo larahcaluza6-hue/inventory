@@ -14,6 +14,7 @@ if (isset($_GET['added'])) {
 
 $search = isset($_GET['search']) ? trim($_GET['search']) : '';
 $userId = (int) $_SESSION['user_id'];
+$isPrintView = isset($_GET['export']) && $_GET['export'] === 'print';
 $availableProducts = mysqli_query(
     $conn,
     "SELECT id, product_name, quantity
@@ -51,27 +52,74 @@ if ($search !== '') {
     <link rel="stylesheet" href="style.css?v=<?php echo filemtime('style.css'); ?>">
 </head>
 
-<body>
+<body class="<?php echo $isPrintView ? 'printable-page' : ''; ?>">
 
-<?php include 'sidebar.php'; ?>
+<?php if (!$isPrintView) { ?>
+    <?php include 'sidebar.php'; ?>
+<?php } ?>
 
 <div class="main">
-    <div class="d-flex justify-content-between align-items-center mb-3">
-        <h2>Market</h2>
+    <?php if ($isPrintView) { ?>
+        <div class="print-export-header">
+            <div>
+                <h1>Market Inventory</h1>
+                <p>Generated on <?php echo date('F j, Y'); ?></p>
+            </div>
+            <button type="button" class="toolbar-primary-btn print-action-btn" onclick="printExport()">Print</button>
+        </div>
+    <?php } ?>
 
-        <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addMarketStockModal">
-            Add To Market
-        </button>
+    <?php if (!$isPrintView) { ?>
+    <div class="inventory-toolbar">
+        <h2 class="market-page-title">Market</h2>
+
+        <label class="showing-control toolbar-showing-control">
+            <span>Showing</span>
+            <select class="form-select" aria-label="Showing amount">
+                <option selected>10</option>
+                <option>25</option>
+                <option>50</option>
+            </select>
+        </label>
+
+        <div class="inventory-toolbar-actions">
+            <form method="GET" class="inventory-search">
+                <input
+                    type="text"
+                    name="search"
+                    class="form-control"
+                    placeholder="Search market"
+                    value="<?php echo htmlspecialchars($search); ?>"
+                >
+            </form>
+
+            <button type="button" class="toolbar-btn">
+                <span aria-hidden="true">▽</span>
+                Filter
+            </button>
+
+            <a href="orders.php?<?php echo http_build_query(array_filter(['search' => $search, 'export' => 'print'])); ?>" class="toolbar-btn" target="_blank" rel="noopener" onclick="openPrintExport(this.href); return false;">
+                <span aria-hidden="true">⇩</span>
+                Export
+            </a>
+
+            <button type="button" class="toolbar-primary-btn" data-bs-toggle="modal" data-bs-target="#addMarketStockModal">
+                <span aria-hidden="true">+</span>
+                Add To Market
+            </button>
+        </div>
     </div>
+    <?php } ?>
 
-    <?php if ($message !== '') { ?>
+    <?php if (!$isPrintView && $message !== '') { ?>
         <div class="alert alert-success alert-dismissible fade show" role="alert">
             <?php echo htmlspecialchars($message); ?>
             <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
         </div>
     <?php } ?>
 
-    <form method="GET" class="search-form show-search market-search">
+    <?php if (!$isPrintView) { ?>
+    <form method="GET" class="search-form show-search market-search legacy-search-form">
         <input
             type="text"
             name="search"
@@ -88,6 +136,7 @@ if ($search !== '') {
             <a href="orders.php" class="btn btn-secondary">Back</a>
         <?php } ?>
     </form>
+    <?php } ?>
 
     <div class="products-table-shell">
     <table class="products-table market-products-table compact-market-table">
@@ -95,11 +144,14 @@ if ($search !== '') {
             <tr>
                 <th>Image</th>
                 <th>Product Name</th>
+                <th>Brand</th>
                 <th>Category</th>
                 <th>Market Stock</th>
                 <th>Price</th>
                 <th>Status</th>
-                <th class="text-end">Actions</th>
+                <?php if (!$isPrintView) { ?>
+                    <th class="text-end">Actions</th>
+                <?php } ?>
             </tr>
         </thead>
 
@@ -140,8 +192,9 @@ if ($search !== '') {
 
                     <td>
                         <div class="product-title"><?php echo htmlspecialchars($row['product_name']); ?></div>
-                        <div class="product-brand"><?php echo htmlspecialchars($row['brand']); ?></div>
                     </td>
+
+                    <td><?php echo htmlspecialchars($row['brand']); ?></td>
 
                     <td>
                         <span class="soft-pill category-pill category-<?php echo htmlspecialchars($categoryKey); ?>">
@@ -159,6 +212,7 @@ if ($search !== '') {
                         </span>
                     </td>
 
+                    <?php if (!$isPrintView) { ?>
                     <td class="actions-cell">
                         <button
                             type="button"
@@ -311,12 +365,13 @@ if ($search !== '') {
                             </div>
                         </div>
                     </td>
+                    <?php } ?>
                 </tr>
                 <?php $displayId++; ?>
             <?php } ?>
         <?php } else { ?>
             <tr>
-                <td colspan="7" class="empty-products">No products found.</td>
+                <td colspan="<?php echo $isPrintView ? 7 : 8; ?>" class="empty-products">No products found.</td>
             </tr>
         <?php } ?>
         </tbody>
@@ -325,6 +380,7 @@ if ($search !== '') {
 
 </div>
 
+<?php if (!$isPrintView) { ?>
 <div class="modal fade" id="addMarketStockModal" tabindex="-1" aria-labelledby="addMarketStockModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
@@ -362,7 +418,36 @@ if ($search !== '') {
         </div>
     </div>
 </div>
+<?php } ?>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<?php if ($isPrintView) { ?>
+<script>
+let printStarted = false;
+
+function printExport() {
+    if (printStarted) {
+        return;
+    }
+
+    printStarted = true;
+    window.print();
+}
+
+window.addEventListener('load', function () {
+    printExport();
+});
+
+window.addEventListener('afterprint', function () {
+    window.close();
+});
+</script>
+<?php } else { ?>
+<script>
+function openPrintExport(url) {
+    window.open(url, 'printExport', 'width=1100,height=800');
+}
+</script>
+<?php } ?>
 </body>
 </html>
