@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 include 'db.php';
 
 $message = '';
@@ -79,12 +79,10 @@ if (isset($_POST['reset_password'])) {
 
             <div class="auth-field">
                 <input type="password" name="new_password" class="form-control" placeholder="New Password" minlength="8" maxlength="12" required>
-                <button type="button" class="password-toggle" aria-label="Show password" aria-pressed="false">&#128053;</button>
             </div>
 
             <div class="auth-field">
                 <input type="password" name="confirm_password" class="form-control" placeholder="Confirm Password" minlength="8" maxlength="12" required>
-                <button type="button" class="password-toggle" aria-label="Show password" aria-pressed="false">&#128053;</button>
             </div>
 
             <button type="submit" name="reset_password" class="auth-submit">
@@ -102,20 +100,6 @@ if (isset($_POST['reset_password'])) {
         </p>
     </section>
 </main>
-
-<script>
-document.querySelectorAll('.password-toggle').forEach(function (button) {
-    button.addEventListener('click', function () {
-        const field = button.closest('.auth-field').querySelector('input');
-        const isHidden = field.type === 'password';
-
-        field.type = isHidden ? 'text' : 'password';
-        button.innerHTML = isHidden ? '&#128584;' : '&#128053;';
-        button.setAttribute('aria-label', isHidden ? 'Hide password' : 'Show password');
-        button.setAttribute('aria-pressed', isHidden ? 'true' : 'false');
-    });
-});
-</script>
 
 </body>
 </html>

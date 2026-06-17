@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 include 'db.php';
 
 $modalToOpen = '';
@@ -144,7 +144,6 @@ if (isset($_POST['login']) || isset($_POST['admin_login'])) {
 
                     <div class="auth-field">
                         <input type="password" name="password" class="form-control login-password" placeholder="Password" minlength="8" maxlength="12" required>
-                        <button type="button" class="password-toggle" aria-label="Show password" aria-pressed="false">&#128053;</button>
                     </div>
 
                     <div class="auth-row auth-row-end">
@@ -184,7 +183,6 @@ if (isset($_POST['login']) || isset($_POST['admin_login'])) {
 
                     <div class="auth-field">
                         <input type="password" name="password" class="form-control login-password" placeholder="Password" minlength="8" maxlength="12" required>
-                        <button type="button" class="password-toggle" aria-label="Show password" aria-pressed="false">&#128053;</button>
                     </div>
 
                     <button type="submit" name="register" class="auth-submit">Register</button>
@@ -216,7 +214,6 @@ if (isset($_POST['login']) || isset($_POST['admin_login'])) {
 
                     <div class="auth-field">
                         <input type="password" name="password" class="form-control login-password" placeholder="Admin Password" minlength="8" maxlength="12" required>
-                        <button type="button" class="password-toggle" aria-label="Show password" aria-pressed="false">&#128053;</button>
                     </div>
 
                     <div class="auth-row auth-row-end">
@@ -242,18 +239,6 @@ document.querySelectorAll('.login-password').forEach(function (field) {
         if (field.value.length > 12) {
             field.value = field.value.slice(0, 12);
         }
-    });
-});
-
-document.querySelectorAll('.password-toggle').forEach(function (button) {
-    button.addEventListener('click', function () {
-        const field = button.closest('.auth-field').querySelector('input');
-        const isHidden = field.type === 'password';
-
-        field.type = isHidden ? 'text' : 'password';
-        button.innerHTML = isHidden ? '&#128584;' : '&#128053;';
-        button.setAttribute('aria-label', isHidden ? 'Hide password' : 'Show password');
-        button.setAttribute('aria-pressed', isHidden ? 'true' : 'false');
     });
 });
 

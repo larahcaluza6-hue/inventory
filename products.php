@@ -6,7 +6,6 @@ $search = isset($_GET['search']) ? trim($_GET['search']) : '';
 $stockFilter = isset($_GET['stock']) ? $_GET['stock'] : '';
 $userId = (int) $_SESSION['user_id'];
 $isAdminUser = is_admin();
-$isPrintView = isset($_GET['export']) && $_GET['export'] === 'print';
 
 if ($stockFilter === 'low') {
     $query = "SELECT products.*, users.fullname AS owner_name
@@ -81,7 +80,6 @@ if ($stockFilter === 'low') {
     mysqli_stmt_execute($stmt);
     $result = mysqli_stmt_get_result($stmt);
 }
-
 ?>
 
 <!DOCTYPE html>
@@ -93,79 +91,35 @@ if ($stockFilter === 'low') {
     <link rel="stylesheet" href="style.css?v=<?php echo filemtime('style.css'); ?>">
 </head>
 
-<body class="<?php echo $isPrintView ? 'printable-page' : ''; ?>">
+<body>
 
-<?php if (!$isPrintView) { ?>
-    <?php include 'sidebar.php'; ?>
-<?php } ?>
+<?php include 'sidebar.php'; ?>
 
 <div class="main">
-    <?php if ($isPrintView) { ?>
-        <div class="print-export-header">
-            <div>
-                <h1>Product Inventory</h1>
-                <p>Generated on <?php echo date('F j, Y'); ?></p>
-            </div>
-            <button type="button" class="toolbar-primary-btn print-action-btn" onclick="printExport()">Print</button>
-        </div>
-    <?php } ?>
 
-    <?php if (!$isPrintView) { ?>
-    <div class="inventory-toolbar">
-        <h2 class="inventory-page-title">Product</h2>
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h2>Products</h2>
 
-        <label class="showing-control toolbar-showing-control">
-            <span>Showing</span>
-            <select class="form-select" aria-label="Showing amount">
-                <option selected>10</option>
-                <option>25</option>
-                <option>50</option>
-            </select>
-        </label>
-
-        <div class="inventory-toolbar-actions">
-            <form method="GET" class="inventory-search">
-                <input
-                    type="text"
-                    name="search"
-                    class="form-control"
-                    placeholder="Search product"
-                    value="<?php echo htmlspecialchars($search); ?>"
-                >
-                <?php if ($stockFilter !== '') { ?>
-                    <input type="hidden" name="stock" value="<?php echo htmlspecialchars($stockFilter); ?>">
-                <?php } ?>
-            </form>
-
-            <a href="products.php?<?php echo http_build_query(array_filter(['search' => $search, 'stock' => $stockFilter, 'export' => 'print'])); ?>" class="toolbar-btn" target="_blank" rel="noopener" onclick="openPrintExport(this.href); return false;">
-                <span aria-hidden="true">⇩</span>
-                Export
-            </a>
-
-            <button type="button" class="toolbar-primary-btn" data-bs-toggle="modal" data-bs-target="#addProductModal">
-                <span aria-hidden="true">+</span>
-                Add New Product
-            </button>
-        </div>
+        <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addProductModal">
+            Add Product Stock         
+        </button>
     </div>
-    <?php } ?>
 
-    <?php if (!$isPrintView && isset($_GET['duplicate'])) { ?>
+    <?php if (isset($_GET['duplicate'])) { ?>
         <div class="alert alert-warning alert-dismissible fade show" role="alert">
             Product <strong><?php echo htmlspecialchars($_GET['duplicate']); ?></strong> already exists.
             <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
         </div>
     <?php } ?>
 
-    <?php if (!$isPrintView && $stockFilter === 'low') { ?>
+    <?php if ($stockFilter === 'low') { ?>
         <div class="alert alert-info d-flex justify-content-between align-items-center" role="alert">
             <span>Showing products with stock less than 10.</span>
             <a href="products.php" class="btn btn-sm btn-secondary">Back</a>
         </div>
     <?php } ?>
 
-    <?php if (!$isPrintView) { ?>
-    <form method="GET" class="search-form <?php echo $search !== '' ? 'show-search' : ''; ?> legacy-search-form" id="productSearchForm">
+    <form method="GET" class="search-form <?php echo $search !== '' ? 'show-search' : ''; ?>" id="productSearchForm">
         <input
             type="text"
             name="search"
@@ -183,7 +137,6 @@ if ($stockFilter === 'low') {
             </a>
         <?php } ?>
     </form>
-    <?php } ?>
 
     <div class="products-table-shell">
     <table class="products-table">
@@ -192,7 +145,6 @@ if ($stockFilter === 'low') {
             <tr>
                 <th>Image</th>
                 <th>Product Name</th>
-                <th>Brand</th>
                 <th>Stock</th>
                 <th>Price</th>
                 <th>Category</th>
@@ -200,9 +152,7 @@ if ($stockFilter === 'low') {
                     <th>Owner</th>
                 <?php } ?>
                 <th>Status</th>
-                <?php if (!$isPrintView) { ?>
-                    <th class="text-end">Actions</th>
-                <?php } ?>
+                <th class="text-end">Actions</th>
             </tr>
         </thead>
 
@@ -244,9 +194,8 @@ if ($stockFilter === 'low') {
 
                 <td>
                     <div class="product-title"><?php echo htmlspecialchars($row['product_name']); ?></div>
+                    <div class="product-brand"><?php echo htmlspecialchars($row['brand']); ?></div>
                 </td>
-
-                <td><?php echo htmlspecialchars($row['brand']); ?></td>
 
                 <td>
                     <div class="stock-count stock-<?php echo $statusClass; ?>"><?php echo $quantity; ?></div>
@@ -271,7 +220,6 @@ if ($stockFilter === 'low') {
                     </span>
                 </td>
 
-                <?php if (!$isPrintView) { ?>
                 <td class="actions-cell">
                     <button
                         type="button"
@@ -423,14 +371,13 @@ if ($stockFilter === 'low') {
                         </div>
                     </div>
                 </td>
-                <?php } ?>
             </tr>
 
         <?php $displayId++; ?>
         <?php } ?>
         <?php } else { ?>
             <tr>
-                <td colspan="<?php echo $isAdminUser ? ($isPrintView ? 8 : 9) : ($isPrintView ? 7 : 8); ?>" class="empty-products">No products found.</td>
+                <td colspan="<?php echo $isAdminUser ? 8 : 7; ?>" class="empty-products">No products found.</td>
             </tr>
         <?php } ?>
 
@@ -441,7 +388,6 @@ if ($stockFilter === 'low') {
 
 </div>
 
-<?php if (!$isPrintView) { ?>
 <div class="modal fade" id="addProductModal" tabindex="-1" aria-labelledby="addProductModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
@@ -473,39 +419,12 @@ if ($stockFilter === 'low') {
         </div>
     </div>
 </div>
-<?php } ?>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-<?php if ($isPrintView) { ?>
-<script>
-let printStarted = false;
-
-function printExport() {
-    if (printStarted) {
-        return;
-    }
-
-    printStarted = true;
-    window.print();
-}
-
-window.addEventListener('load', function () {
-    printExport();
-});
-
-window.addEventListener('afterprint', function () {
-    window.close();
-});
-</script>
-<?php } else { ?>
 <script>
 const searchForm = document.getElementById('productSearchForm');
 const searchToggle = document.getElementById('searchToggle');
 const searchInput = document.getElementById('productSearchInput');
-
-function openPrintExport(url) {
-    window.open(url, 'printExport', 'width=1100,height=800');
-}
 
 searchToggle.addEventListener('click', function (event) {
     if (!searchForm.classList.contains('show-search')) {
@@ -515,6 +434,5 @@ searchToggle.addEventListener('click', function (event) {
     }
 });
 </script>
-<?php } ?>
 </body>
 </html>
