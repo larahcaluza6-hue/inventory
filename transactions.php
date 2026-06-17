@@ -3,6 +3,7 @@ include 'db.php';
 include 'auth.php';
 
 $userId = (int) $_SESSION['user_id'];
+$isPrintView = isset($_GET['export']) && $_GET['export'] === 'print';
 
 $transactions = mysqli_query(
     $conn,
@@ -23,12 +24,33 @@ $transactions = mysqli_query(
     <link rel="stylesheet" href="style.css?v=<?php echo filemtime('style.css'); ?>">
 </head>
 
-<body>
+<body class="<?php echo $isPrintView ? 'printable-page' : ''; ?>">
 
-<?php include 'sidebar.php'; ?>
+<?php if (!$isPrintView) { ?>
+    <?php include 'sidebar.php'; ?>
+<?php } ?>
 
 <div class="main">
-    <h2 class="mb-3">Transactions</h2>
+    <?php if ($isPrintView) { ?>
+        <div class="print-export-header">
+            <div>
+                <h1>Transactions</h1>
+                <p>Generated on <?php echo date('F j, Y'); ?></p>
+            </div>
+            <button type="button" class="toolbar-primary-btn print-action-btn" onclick="printExport()">Print</button>
+        </div>
+    <?php } else { ?>
+        <div class="inventory-toolbar">
+            <h2 class="transaction-page-title">Transactions</h2>
+
+            <div class="inventory-toolbar-actions transaction-toolbar-actions">
+                <a href="transactions.php?export=print" class="toolbar-btn" target="_blank" rel="noopener" onclick="openPrintExport(this.href); return false;">
+                    <span aria-hidden="true">⇩</span>
+                    Export
+                </a>
+            </div>
+        </div>
+    <?php } ?>
 
     <div class="table-responsive">
     <table class="table table-bordered text-center align-middle market-table">
@@ -65,5 +87,33 @@ $transactions = mysqli_query(
     </div>
 </div>
 
+<?php if ($isPrintView) { ?>
+<script>
+let printStarted = false;
+
+function printExport() {
+    if (printStarted) {
+        return;
+    }
+
+    printStarted = true;
+    window.print();
+}
+
+window.addEventListener('load', function () {
+    printExport();
+});
+
+window.addEventListener('afterprint', function () {
+    window.close();
+});
+</script>
+<?php } else { ?>
+<script>
+function openPrintExport(url) {
+    window.open(url, 'printExport', 'width=1100,height=800');
+}
+</script>
+<?php } ?>
 </body>
 </html>
