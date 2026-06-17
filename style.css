@@ -442,7 +442,10 @@ canvas{
 .sidebar{
     width:250px;
     height:100vh;
-    background:linear-gradient(to bottom,#2563eb,#1e40af);
+    background:
+        linear-gradient(rgba(111,209,215,.76),rgba(111,209,215,.76)),
+        url("assets/sidebar-store.png") center / cover no-repeat,
+        #6FD1D7;
     position:fixed;
     top:0;
     left:0;
@@ -462,7 +465,7 @@ canvas{
     right:0;
     width:12px;
     height:100%;
-    background:rgba(30,64,175,.96);
+    background:#6FD1D7;
     border-left:1px solid rgba(255,255,255,.16);
     box-shadow:6px 0 16px rgba(15,23,42,.14);
     transition:opacity .2s ease;
