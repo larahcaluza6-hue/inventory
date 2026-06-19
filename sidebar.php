@@ -2,7 +2,9 @@
 $currentPage = basename($_SERVER['PHP_SELF']);
 $productPages = ['products.php', 'add_product.php', 'edit.php'];
 $marketPages = ['orders.php', 'add_market_stock.php'];
+$salesPages = ['sales.php', 'sell_product.php'];
 $transactionPages = ['transactions.php'];
+$adminLogPages = ['admin_log.php'];
 $isAdminUser = function_exists('is_admin') && is_admin();
 $profileName = $_SESSION['fullname'] ?? 'User';
 $profileRole = $isAdminUser ? 'Administrator' : 'User';
@@ -56,6 +58,18 @@ if ($profileInitial === '') {
             </a>
         </li>
         <li>
+            <a class="<?php echo in_array($currentPage, $salesPages) ? 'active' : ''; ?>" href="sales.php">
+                <span class="nav-mark">S</span>
+                <svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="M6 7h12l-1 14H7L6 7Z"></path>
+                    <path d="M9 7a3 3 0 0 1 6 0"></path>
+                    <path d="M9 13h6"></path>
+                    <path d="M12 10v6"></path>
+                </svg>
+                <span class="nav-label">Sales</span>
+            </a>
+        </li>
+        <li>
             <a class="<?php echo in_array($currentPage, $transactionPages) ? 'active' : ''; ?>" href="transactions.php">
                 <span class="nav-mark">T</span>
                 <svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true">
@@ -67,6 +81,20 @@ if ($profileInitial === '') {
                 <span class="nav-label">Transactions</span>
             </a>
         </li>
+        <?php if ($isAdminUser) { ?>
+        <li>
+            <a class="<?php echo in_array($currentPage, $adminLogPages) ? 'active' : ''; ?>" href="admin_log.php">
+                <span class="nav-mark">L</span>
+                <svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="M5 4h14v16H5Z"></path>
+                    <path d="M8 8h8"></path>
+                    <path d="M8 12h8"></path>
+                    <path d="M8 16h5"></path>
+                </svg>
+                <span class="nav-label">Admin Log</span>
+            </a>
+        </li>
+        <?php } ?>
     </ul>
 </div>
 

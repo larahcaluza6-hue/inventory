@@ -26,26 +26,11 @@ $summaryResult = mysqli_query(
         (SELECT COUNT(*) FROM products) AS products_total,
         (SELECT COALESCE(SUM(quantity), 0) FROM products) AS stock_total,
         (SELECT COUNT(*) FROM market_transactions) AS transactions_total,
+        (SELECT COUNT(*) FROM product_sales) AS sales_total,
+        (SELECT COALESCE(SUM(total_amount), 0) FROM product_sales) AS sales_amount_total,
         (SELECT COUNT(*) FROM login_history) AS logins_total"
 );
 $summary = mysqli_fetch_assoc($summaryResult);
-
-$transactionsResult = mysqli_query(
-    $conn,
-    "SELECT
-        mt.id,
-        mt.quantity,
-        mt.transaction_type,
-        mt.created_at,
-        p.product_name,
-        users.fullname,
-        users.email
-     FROM market_transactions mt
-     LEFT JOIN products p ON p.id = mt.product_id
-     LEFT JOIN users ON users.id = mt.user_id
-     ORDER BY mt.created_at DESC, mt.id DESC
-     LIMIT 100"
-);
 
 $loginHistoryResult = mysqli_query(
     $conn,
@@ -109,17 +94,37 @@ $loginHistoryResult = mysqli_query(
         <div class="col-lg-3 col-sm-6">
             <a href="stock_transactions.php" class="dashboard-card-link">
                 <div class="card-box blue">
-                    <h5>Transactions</h5>
+                    <h5>Stock Transactions</h5>
                     <h1><?php echo (int) $summary['transactions_total']; ?></h1>
                 </div>
             </a>
         </div>
 
         <div class="col-lg-3 col-sm-6">
-            <div class="card-box green">
-                <h5>Login Logs</h5>
-                <h1><?php echo (int) $summary['logins_total']; ?></h1>
-            </div>
+            <a href="sales.php" class="dashboard-card-link">
+                <div class="card-box green">
+                    <h5>Total Sales</h5>
+                    <h1><?php echo (int) $summary['sales_total']; ?></h1>
+                </div>
+            </a>
+        </div>
+
+        <div class="col-lg-3 col-sm-6">
+            <a href="sales.php" class="dashboard-card-link">
+                <div class="card-box blue">
+                    <h5>Total Amount</h5>
+                    <h1>PHP <?php echo number_format((float) $summary['sales_amount_total'], 2); ?></h1>
+                </div>
+            </a>
+        </div>
+
+        <div class="col-lg-3 col-sm-6">
+            <a href="admin_log.php#loginHistory" class="dashboard-card-link">
+                <div class="card-box green">
+                    <h5>Login Logs</h5>
+                    <h1><?php echo (int) $summary['logins_total']; ?></h1>
+                </div>
+            </a>
         </div>
     </div>
 
@@ -167,54 +172,6 @@ $loginHistoryResult = mysqli_query(
                     <?php } else { ?>
                         <tr>
                             <td colspan="6" class="empty-products">No users found.</td>
-                        </tr>
-                    <?php } ?>
-                </tbody>
-            </table>
-        </div>
-    </div>
-
-    <div class="admin-panel" id="allTransactions">
-        <div class="admin-panel-header">
-            <h3>All Transactions</h3>
-        </div>
-
-        <div class="products-table-shell">
-            <table class="products-table admin-monitor-table">
-                <thead>
-                    <tr>
-                        <th>#</th>
-                        <th>User</th>
-                        <th>Email</th>
-                        <th>Product</th>
-                        <th>Quantity</th>
-                        <th>Transaction</th>
-                        <th>Date</th>
-                    </tr>
-                </thead>
-
-                <tbody>
-                    <?php if (mysqli_num_rows($transactionsResult) > 0) { ?>
-                        <?php $transactionNumber = 1; ?>
-                        <?php while ($transaction = mysqli_fetch_assoc($transactionsResult)) { ?>
-                            <tr>
-                                <td class="id-cell"><?php echo $transactionNumber; ?></td>
-                                <td><?php echo htmlspecialchars($transaction['fullname'] ?? 'Unknown User'); ?></td>
-                                <td><?php echo htmlspecialchars($transaction['email'] ?? ''); ?></td>
-                                <td><?php echo htmlspecialchars($transaction['product_name'] ?? 'Deleted Product'); ?></td>
-                                <td><?php echo format_quantity($transaction['quantity']); ?></td>
-                                <td>
-                                    <span class="soft-pill category-pill">
-                                        <?php echo htmlspecialchars($transaction['transaction_type']); ?>
-                                    </span>
-                                </td>
-                                <td><?php echo htmlspecialchars($transaction['created_at']); ?></td>
-                            </tr>
-                            <?php $transactionNumber++; ?>
-                        <?php } ?>
-                    <?php } else { ?>
-                        <tr>
-                            <td colspan="7" class="empty-products">No transactions found.</td>
                         </tr>
                     <?php } ?>
                 </tbody>

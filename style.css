@@ -786,7 +786,8 @@ canvas{
 
 .inventory-toolbar h2.inventory-page-title,
 .inventory-toolbar h2.market-page-title,
-.inventory-toolbar h2.transaction-page-title{
+.inventory-toolbar h2.transaction-page-title,
+.inventory-toolbar h2.sell-page-title{
     position:absolute;
     left:0;
     top:-126px;
@@ -801,6 +802,10 @@ canvas{
 }
 
 .inventory-toolbar h2.transaction-page-title{
+    top:-126px;
+}
+
+.inventory-toolbar h2.sell-page-title{
     top:-126px;
 }
 
@@ -1773,6 +1778,89 @@ canvas{
     padding:34px 38px 30px;
     border:1px solid #e5e7eb;
     border-radius:8px;
+}
+
+.sales-summary-cards{
+    margin-bottom:18px;
+}
+
+.sale-items{
+    display:grid;
+    gap:10px;
+    margin-bottom:12px;
+}
+
+.sale-item-row{
+    display:grid;
+    grid-template-columns:minmax(220px,1fr) 96px 120px 36px;
+    gap:10px;
+    align-items:center;
+}
+
+.sale-line-total{
+    height:38px;
+    display:flex;
+    align-items:center;
+    justify-content:flex-end;
+    color:#111827;
+    font-size:14px;
+    font-weight:800;
+    white-space:nowrap;
+}
+
+.sale-remove-item{
+    width:36px;
+    height:36px;
+    border:0;
+    border-radius:8px;
+    background:#fee2e2;
+    color:#b91c1c;
+    font-size:22px;
+    line-height:1;
+    font-weight:800;
+}
+
+.sale-add-item{
+    margin-bottom:12px;
+}
+
+.sale-checkout-summary{
+    display:grid;
+    gap:10px;
+    margin-top:4px;
+    padding:14px;
+    border:1px solid #e5e7eb;
+    border-radius:8px;
+    background:#f8fafc;
+}
+
+.sale-checkout-summary div{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:12px;
+}
+
+.sale-checkout-summary span{
+    color:#64748b;
+    font-size:13px;
+    font-weight:700;
+}
+
+.sale-checkout-summary strong{
+    color:#111827;
+    font-size:15px;
+    font-weight:800;
+}
+
+@media(max-width:700px){
+    .sale-item-row{
+        grid-template-columns:1fr;
+    }
+
+    .sale-line-total{
+        justify-content:flex-start;
+    }
 }
 
 .sales-chart-title{

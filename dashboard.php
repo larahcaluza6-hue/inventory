@@ -13,6 +13,9 @@ $available_data = mysqli_fetch_assoc($available_query);
 $market_stock_query = mysqli_query($conn, "SELECT COALESCE(SUM(market_quantity), 0) as total FROM products WHERE user_id = $userId AND market_quantity > 0");
 $market_stock_data = mysqli_fetch_assoc($market_stock_query);
 
+$sales_amount_query = mysqli_query($conn, "SELECT COALESCE(SUM(total_amount), 0) as total FROM product_sales WHERE user_id = $userId");
+$sales_amount_data = mysqli_fetch_assoc($sales_amount_query);
+
 $sold_out_query = mysqli_query($conn, "SELECT COUNT(*) as total FROM products WHERE user_id = $userId AND quantity <= 0");
 $sold_out_data = mysqli_fetch_assoc($sold_out_query);
 
@@ -31,8 +34,8 @@ for ($month = 1; $month <= $currentMonth; $month++) {
 
 $sales_query = mysqli_query(
     $conn,
-    "SELECT MONTH(created_at) as sale_month, COALESCE(SUM(quantity), 0) as total
-     FROM market_transactions
+    "SELECT MONTH(created_at) as sale_month, COALESCE(SUM(total_amount), 0) as total
+     FROM product_sales
      WHERE user_id = $userId
        AND YEAR(created_at) = $currentYear
      GROUP BY MONTH(created_at)"
@@ -118,6 +121,15 @@ $salesChartColors = array_map(
                 </div>
             </a>
         </div>
+
+        <div class="col-lg-3 col-sm-6">
+            <a href="sales.php" class="dashboard-card-link">
+                <div class="card-box green">
+                    <h5>Total Sales Amount</h5>
+                    <h1>PHP <?php echo number_format((float) $sales_amount_data['total'], 2); ?></h1>
+                </div>
+            </a>
+        </div>
     </div>
 
     <section class="sales-chart-section" aria-label="Sales by month chart">
@@ -161,7 +173,7 @@ new Chart(document.getElementById('salesByMonthChart'), {
             tooltip: {
                 callbacks: {
                     label: function (context) {
-                        return 'Sales: ' + context.parsed.y.toFixed(2) + ' g (' + salesChartPercentages[context.dataIndex] + '%)';
+                        return 'Sales: PHP ' + context.parsed.y.toFixed(2) + ' (' + salesChartPercentages[context.dataIndex] + '%)';
                     }
                 }
             }

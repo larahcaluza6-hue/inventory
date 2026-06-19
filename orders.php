@@ -103,6 +103,11 @@ if ($search !== '') {
                 Print
             </a>
 
+            <a href="sales.php" class="toolbar-btn">
+                <span aria-hidden="true">+</span>
+                Sell Product
+            </a>
+
             <button type="button" class="toolbar-primary-btn" data-bs-toggle="modal" data-bs-target="#addMarketStockModal">
                 <span aria-hidden="true">+</span>
                 Add To Market

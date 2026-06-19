@@ -129,6 +129,27 @@ mysqli_query($conn, "ALTER TABLE market_transactions MODIFY quantity DECIMAL(10,
 
 mysqli_query(
     $conn,
+    "CREATE TABLE IF NOT EXISTS product_sales (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        user_id INT NULL,
+        product_id INT NOT NULL,
+        customer_name VARCHAR(255) NOT NULL DEFAULT '',
+        quantity DECIMAL(10,2) NOT NULL DEFAULT 0.00,
+        grams DECIMAL(10,2) NOT NULL DEFAULT 0.00,
+        unit_price DECIMAL(10,2) NOT NULL DEFAULT 0.00,
+        total_amount DECIMAL(10,2) NOT NULL DEFAULT 0.00,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    ) ENGINE=MyISAM DEFAULT CHARSET=utf8mb4"
+);
+
+$saleUserColumn = mysqli_query($conn, "SHOW COLUMNS FROM product_sales LIKE 'user_id'");
+
+if ($saleUserColumn && mysqli_num_rows($saleUserColumn) === 0) {
+    mysqli_query($conn, "ALTER TABLE product_sales ADD user_id INT NULL AFTER id");
+}
+
+mysqli_query(
+    $conn,
     "CREATE TABLE IF NOT EXISTS login_history (
         id INT AUTO_INCREMENT PRIMARY KEY,
         user_id INT NULL,
