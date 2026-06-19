@@ -42,7 +42,8 @@ canvas{
     backdrop-filter:none;
 }
 
-.auth-topbar button{
+.auth-topbar button,
+.auth-topbar a{
     min-width:auto;
     border:0;
     border-radius:0;
@@ -52,10 +53,13 @@ canvas{
     font-weight:800;
     padding:8px 10px;
     text-shadow:0 2px 8px rgba(15,23,42,.45);
+    text-decoration:none;
 }
 
 .auth-topbar button:hover,
-.auth-topbar button:focus-visible{
+.auth-topbar button:focus-visible,
+.auth-topbar a:hover,
+.auth-topbar a:focus-visible{
     background:transparent;
     color:white;
     text-decoration:underline;
@@ -362,6 +366,11 @@ canvas{
 
 .auth-row-end{
     justify-content:flex-end;
+}
+
+.auth-row-center{
+    justify-content:center;
+    flex-wrap:wrap;
 }
 
 .auth-check{

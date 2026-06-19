@@ -21,7 +21,7 @@ if ($profileInitial === '') {
 
     <ul>
         <li>
-            <a class="<?php echo $currentPage == 'dashboard.php' ? 'active' : ''; ?>" href="dashboard.php">
+            <a class="<?php echo (!$isAdminUser && $currentPage == 'dashboard.php') || ($isAdminUser && $currentPage == 'admin.php') ? 'active' : ''; ?>" href="<?php echo $isAdminUser ? 'admin.php' : 'dashboard.php'; ?>">
                 <span class="nav-mark">D</span>
                 <svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true">
                     <rect x="3" y="3" width="7" height="8"></rect>
@@ -67,18 +67,6 @@ if ($profileInitial === '') {
                 <span class="nav-label">Transactions</span>
             </a>
         </li>
-        <?php if ($isAdminUser) { ?>
-            <li>
-                <a class="<?php echo $currentPage == 'admin.php' ? 'active' : ''; ?>" href="admin.php">
-                    <span class="nav-mark">A</span>
-                    <svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true">
-                        <path d="M12 3l7 3v5c0 5-3 8-7 10-4-2-7-5-7-10V6l7-3Z"></path>
-                        <path d="M9 12l2 2 4-4"></path>
-                    </svg>
-                    <span class="nav-label">Admin</span>
-                </a>
-            </li>
-        <?php } ?>
     </ul>
 </div>
 

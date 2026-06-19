@@ -3,6 +3,10 @@ include 'db.php';
 
 $modalToOpen = '';
 
+if (isset($_GET['open']) && $_GET['open'] === 'admin') {
+    $modalToOpen = 'adminModal';
+}
+
 function record_login_history($conn, $user, $role) {
     $historyFullname = mysqli_real_escape_string($conn, $user['fullname']);
     $historyEmail = mysqli_real_escape_string($conn, $user['email']);
@@ -82,6 +86,7 @@ if (isset($_POST['login']) || isset($_POST['admin_login'])) {
                 $_SESSION['user_id'] = $user['id'];
                 $_SESSION['fullname'] = $user['fullname'];
                 $_SESSION['role'] = $canUseAdmin ? 'admin' : 'user';
+                $_SESSION['admin_login'] = $isAdminLogin && $canUseAdmin;
 
                 record_login_history($conn, $user, $_SESSION['role']);
 
@@ -220,7 +225,7 @@ if (isset($_POST['login']) || isset($_POST['admin_login'])) {
                     </div>
 
                     <div class="auth-row auth-row-end">
-                        <a href="forgot_password.php" class="auth-muted-link">Forgot Password?</a>
+                        <a href="forgot_password.php?from=admin" class="auth-muted-link">Forgot Password?</a>
                     </div>
 
                     <button type="submit" name="admin_login" class="auth-submit">Administrator Login</button>

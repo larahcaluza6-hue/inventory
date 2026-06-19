@@ -2,7 +2,7 @@
 include 'auth.php';
 
 if (!is_admin()) {
-    header("Location: dashboard.php?admin=denied");
+    header("Location: products.php?admin=denied");
     exit();
 }
 ?>

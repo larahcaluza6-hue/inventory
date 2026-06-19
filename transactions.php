@@ -46,7 +46,7 @@ $transactions = mysqli_query(
             <div class="inventory-toolbar-actions transaction-toolbar-actions">
                 <a href="transactions.php?export=print" class="toolbar-btn" target="_blank" rel="noopener" onclick="openPrintExport(this.href); return false;">
                     <span aria-hidden="true">⇩</span>
-                    Export
+                    Print
                 </a>
             </div>
         </div>
@@ -58,7 +58,7 @@ $transactions = mysqli_query(
             <tr>
                 <th>ID</th>
                 <th>Product Name</th>
-                <th>Quantity (g)</th>
+                <th>Quantity</th>
                 <th>Transaction</th>
                 <th>Date</th>
             </tr>
@@ -71,7 +71,7 @@ $transactions = mysqli_query(
                 <tr>
                     <td><?php echo $transactionId; ?></td>
                     <td><?php echo htmlspecialchars($transactionRow['product_name'] ?? 'Deleted Product'); ?></td>
-                    <td><?php echo format_grams($transactionRow['quantity']); ?></td>
+                    <td><?php echo format_quantity($transactionRow['quantity']); ?></td>
                     <td><?php echo htmlspecialchars($transactionRow['transaction_type']); ?></td>
                     <td><?php echo htmlspecialchars($transactionRow['created_at']); ?></td>
                 </tr>

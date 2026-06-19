@@ -3,6 +3,8 @@ include 'db.php';
 
 $message = '';
 $error = '';
+$fromAdmin = isset($_GET['from']) && $_GET['from'] === 'admin';
+$loginUrl = $fromAdmin ? 'login.php?open=admin' : 'login.php';
 
 if (isset($_POST['reset_password'])) {
     $email = trim($_POST['email']);
@@ -45,64 +47,79 @@ if (isset($_POST['reset_password'])) {
 
 <body class="auth-page">
 
-<main class="auth-shell">
-    <section class="auth-box">
-        <div class="auth-logo" aria-hidden="true">
-            <div class="auth-logo-mark">
-                <span class="auth-cart-basket"></span>
-                <span class="auth-cart-handle"></span>
-                <span class="auth-cart-wheel auth-cart-wheel-left"></span>
-                <span class="auth-cart-wheel auth-cart-wheel-right"></span>
-                <span class="auth-leaf auth-leaf-one"></span>
-                <span class="auth-leaf auth-leaf-two"></span>
+<nav class="auth-topbar" aria-label="Account actions">
+    <a href="login.php">Login</a>
+    <a href="login.php?open=admin">Admin</a>
+</nav>
+
+<div class="modal fade auth-modal" id="forgotPasswordModal" tabindex="-1" aria-labelledby="forgotPasswordModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title" id="forgotPasswordModalLabel">Reset Password</h2>
+                <a href="<?php echo htmlspecialchars($loginUrl); ?>" class="btn-close" aria-label="Close"></a>
+            </div>
+
+            <div class="modal-body">
+                <?php if ($error !== '') { ?>
+                    <div class="alert alert-danger">
+                        <?php echo htmlspecialchars($error); ?>
+                    </div>
+                <?php } ?>
+
+                <?php if ($message !== '') { ?>
+                    <div class="alert alert-success">
+                        <?php echo htmlspecialchars($message); ?>
+                    </div>
+                <?php } ?>
+
+                <form method="POST" class="auth-form">
+                    <?php if ($fromAdmin) { ?>
+                        <input type="hidden" name="from" value="admin">
+                    <?php } ?>
+
+                    <div class="auth-field">
+                        <input type="email" name="email" class="form-control" placeholder="Email" required>
+                    </div>
+
+                    <div class="auth-field">
+                        <input type="password" name="new_password" class="form-control login-password" placeholder="New Password" minlength="8" maxlength="12" required>
+                        <button type="button" class="password-toggle" aria-label="Show password" aria-pressed="false">&#128053;</button>
+                    </div>
+
+                    <div class="auth-field">
+                        <input type="password" name="confirm_password" class="form-control login-password" placeholder="Confirm Password" minlength="8" maxlength="12" required>
+                        <button type="button" class="password-toggle" aria-label="Show password" aria-pressed="false">&#128053;</button>
+                    </div>
+
+                    <button type="submit" name="reset_password" class="auth-submit">
+                        Reset Password
+                    </button>
+
+                    <div class="auth-row auth-row-center">
+                        <span>Remember your password?</span>
+                        <a href="<?php echo htmlspecialchars($loginUrl); ?>" class="auth-muted-link">Login</a>
+                    </div>
+                </form>
             </div>
         </div>
+    </div>
+</div>
 
-        <h1>Reset Password</h1>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+new bootstrap.Modal(document.getElementById('forgotPasswordModal'), {
+    backdrop: 'static'
+}).show();
 
-        <?php if ($error !== '') { ?>
-            <div class="alert alert-danger">
-                <?php echo htmlspecialchars($error); ?>
-            </div>
-        <?php } ?>
-
-        <?php if ($message !== '') { ?>
-            <div class="alert alert-success">
-                <?php echo htmlspecialchars($message); ?>
-            </div>
-        <?php } ?>
-
-        <form method="POST" class="auth-form">
-            <div class="auth-field">
-                <input type="email" name="email" class="form-control" placeholder="Email" required>
-            </div>
-
-            <div class="auth-field">
-                <input type="password" name="new_password" class="form-control" placeholder="New Password" minlength="8" maxlength="12" required>
-                <button type="button" class="password-toggle" aria-label="Show password" aria-pressed="false">&#128053;</button>
-            </div>
-
-            <div class="auth-field">
-                <input type="password" name="confirm_password" class="form-control" placeholder="Confirm Password" minlength="8" maxlength="12" required>
-                <button type="button" class="password-toggle" aria-label="Show password" aria-pressed="false">&#128053;</button>
-            </div>
-
-            <button type="submit" name="reset_password" class="auth-submit">
-                Reset Password
-            </button>
-        </form>
-
-        <div class="auth-divider">
-            <span>or</span>
-        </div>
-
-        <p class="auth-switch">
-            Remember your password?
-            <a href="login.php">Login</a>
-        </p>
-    </section>
-</main>
-
+document.querySelectorAll('.login-password').forEach(function (field) {
+    field.addEventListener('input', function () {
+        if (field.value.length > 12) {
+            field.value = field.value.slice(0, 12);
+        }
+    });
+});
+</script>
 <script>
 document.querySelectorAll('.password-toggle').forEach(function (button) {
     button.addEventListener('click', function () {

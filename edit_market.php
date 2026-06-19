@@ -26,10 +26,15 @@ if (isset($_POST['update'])) {
     $category = $_POST['category'];
     $brand = $_POST['brand'];
     $marketQuantity = (float) $_POST['market_quantity'];
+    $marketGrams = (float) $_POST['market_grams'];
     $price = (float) $_POST['price'];
 
     if ($marketQuantity < 0) {
         $marketQuantity = 0;
+    }
+
+    if ($marketGrams < 0) {
+        $marketGrams = 0;
     }
 
     $uploadDir = __DIR__ . "/assets/uploads/";
@@ -47,18 +52,18 @@ if (isset($_POST['update'])) {
         $update = mysqli_prepare(
             $conn,
             "UPDATE products
-             SET product_name = ?, category = ?, brand = ?, market_quantity = ?, price = ?, image = ?
+             SET product_name = ?, category = ?, brand = ?, market_quantity = ?, market_grams = ?, price = ?, image = ?
              WHERE id = ? AND user_id = ?"
         );
-        mysqli_stmt_bind_param($update, "sssddsii", $productName, $category, $brand, $marketQuantity, $price, $image, $id, $userId);
+        mysqli_stmt_bind_param($update, "sssdddsii", $productName, $category, $brand, $marketQuantity, $marketGrams, $price, $image, $id, $userId);
     } else {
         $update = mysqli_prepare(
             $conn,
             "UPDATE products
-             SET product_name = ?, category = ?, brand = ?, market_quantity = ?, price = ?
+             SET product_name = ?, category = ?, brand = ?, market_quantity = ?, market_grams = ?, price = ?
              WHERE id = ? AND user_id = ?"
         );
-        mysqli_stmt_bind_param($update, "sssddii", $productName, $category, $brand, $marketQuantity, $price, $id, $userId);
+        mysqli_stmt_bind_param($update, "sssdddii", $productName, $category, $brand, $marketQuantity, $marketGrams, $price, $id, $userId);
     }
 
     mysqli_stmt_execute($update);

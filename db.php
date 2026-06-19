@@ -17,7 +17,13 @@ if(!$conn){
 
 if (!function_exists('format_grams')) {
     function format_grams($value) {
-        return number_format((float) $value, 2) . ' g';
+        return number_format((float) $value, 2);
+    }
+}
+
+if (!function_exists('format_quantity')) {
+    function format_quantity($value) {
+        return number_format((float) $value, 0);
     }
 }
 
@@ -60,7 +66,9 @@ mysqli_query(
         category VARCHAR(255) NOT NULL,
         brand VARCHAR(255) NOT NULL,
         quantity DECIMAL(10,2) NOT NULL DEFAULT 0.00,
+        grams DECIMAL(10,2) NOT NULL DEFAULT 0.00,
         market_quantity DECIMAL(10,2) NOT NULL DEFAULT 0.00,
+        market_grams DECIMAL(10,2) NOT NULL DEFAULT 0.00,
         price DECIMAL(10,2) NOT NULL DEFAULT 0.00,
         image VARCHAR(255) NOT NULL DEFAULT '',
         status VARCHAR(50) NOT NULL DEFAULT 'Available',
@@ -74,8 +82,24 @@ if ($marketStockColumn && mysqli_num_rows($marketStockColumn) === 0) {
     mysqli_query($conn, "ALTER TABLE products ADD market_quantity DECIMAL(10,2) NOT NULL DEFAULT 0.00 AFTER quantity");
 }
 
+$gramsColumn = mysqli_query($conn, "SHOW COLUMNS FROM products LIKE 'grams'");
+
+if ($gramsColumn && mysqli_num_rows($gramsColumn) === 0) {
+    mysqli_query($conn, "ALTER TABLE products ADD grams DECIMAL(10,2) NOT NULL DEFAULT 0.00 AFTER quantity");
+    mysqli_query($conn, "UPDATE products SET grams = quantity WHERE grams = 0");
+}
+
+$marketGramsColumn = mysqli_query($conn, "SHOW COLUMNS FROM products LIKE 'market_grams'");
+
+if ($marketGramsColumn && mysqli_num_rows($marketGramsColumn) === 0) {
+    mysqli_query($conn, "ALTER TABLE products ADD market_grams DECIMAL(10,2) NOT NULL DEFAULT 0.00 AFTER market_quantity");
+    mysqli_query($conn, "UPDATE products SET market_grams = market_quantity WHERE market_grams = 0");
+}
+
 mysqli_query($conn, "ALTER TABLE products MODIFY quantity DECIMAL(10,2) NOT NULL DEFAULT 0.00");
+mysqli_query($conn, "ALTER TABLE products MODIFY grams DECIMAL(10,2) NOT NULL DEFAULT 0.00");
 mysqli_query($conn, "ALTER TABLE products MODIFY market_quantity DECIMAL(10,2) NOT NULL DEFAULT 0.00");
+mysqli_query($conn, "ALTER TABLE products MODIFY market_grams DECIMAL(10,2) NOT NULL DEFAULT 0.00");
 
 $productUserColumn = mysqli_query($conn, "SHOW COLUMNS FROM products LIKE 'user_id'");
 

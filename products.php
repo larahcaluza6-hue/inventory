@@ -39,6 +39,7 @@ if ($stockFilter === 'low') {
                  OR brand LIKE ?
                  OR status LIKE ?
                  OR quantity LIKE ?
+                 OR grams LIKE ?
                  OR price LIKE ?
               )";
 
@@ -50,9 +51,9 @@ if ($stockFilter === 'low') {
     $stmt = mysqli_prepare($conn, $query);
 
     if ($isAdminUser) {
-        mysqli_stmt_bind_param($stmt, "ssssss", $searchTerm, $searchTerm, $searchTerm, $searchTerm, $searchTerm, $searchTerm);
+        mysqli_stmt_bind_param($stmt, "sssssss", $searchTerm, $searchTerm, $searchTerm, $searchTerm, $searchTerm, $searchTerm, $searchTerm);
     } else {
-        mysqli_stmt_bind_param($stmt, "ssssssi", $searchTerm, $searchTerm, $searchTerm, $searchTerm, $searchTerm, $searchTerm, $userId);
+        mysqli_stmt_bind_param($stmt, "sssssssi", $searchTerm, $searchTerm, $searchTerm, $searchTerm, $searchTerm, $searchTerm, $searchTerm, $userId);
     }
 
     mysqli_stmt_execute($stmt);
@@ -139,7 +140,7 @@ if ($stockFilter === 'low') {
 
             <a href="products.php?<?php echo http_build_query(array_filter(['search' => $search, 'stock' => $stockFilter, 'export' => 'print'])); ?>" class="toolbar-btn" target="_blank" rel="noopener" onclick="openPrintExport(this.href); return false;">
                 <span aria-hidden="true">⇩</span>
-                Export
+                Print
             </a>
 
             <button type="button" class="toolbar-primary-btn" data-bs-toggle="modal" data-bs-target="#addProductModal">
@@ -153,6 +154,13 @@ if ($stockFilter === 'low') {
     <?php if (!$isPrintView && isset($_GET['duplicate'])) { ?>
         <div class="alert alert-warning alert-dismissible fade show" role="alert">
             Product <strong><?php echo htmlspecialchars($_GET['duplicate']); ?></strong> already exists.
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    <?php } ?>
+
+    <?php if (!$isPrintView && isset($_GET['duplicate_grams'])) { ?>
+        <div class="alert alert-warning alert-dismissible fade show" role="alert">
+            Grams <strong><?php echo htmlspecialchars($_GET['duplicate_grams']); ?></strong> already exists.
             <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
         </div>
     <?php } ?>
@@ -193,7 +201,8 @@ if ($stockFilter === 'low') {
                 <th>Image</th>
                 <th>Product Name</th>
                 <th>Brand</th>
-                <th>Stock (g)</th>
+                <th>Quantity</th>
+                <th>Grams</th>
                 <th>Price</th>
                 <th>Category</th>
                 <?php if ($isAdminUser) { ?>
@@ -213,6 +222,7 @@ if ($stockFilter === 'low') {
             <?php while($row = mysqli_fetch_assoc($result)) { ?>
             <?php
                 $quantity = (float) $row['quantity'];
+                $grams = (float) $row['grams'];
                 $stockText = 'In Stock';
                 $statusClass = 'success';
 
@@ -249,8 +259,11 @@ if ($stockFilter === 'low') {
                 <td><?php echo htmlspecialchars($row['brand']); ?></td>
 
                 <td>
-                    <div class="stock-count stock-<?php echo $statusClass; ?>"><?php echo format_grams($quantity); ?></div>
-                    <div class="stock-label"><?php echo $stockText; ?></div>
+                    <div class="stock-count stock-<?php echo $statusClass; ?>"><?php echo format_quantity($quantity); ?></div>
+                </td>
+
+                <td>
+                    <div class="stock-count"><?php echo format_grams($grams); ?></div>
                 </td>
 
                 <td class="price-cell">PHP <?php echo number_format((float) $row['price'], 2); ?></td>
@@ -341,8 +354,12 @@ if ($stockFilter === 'low') {
                                             <dd><?php echo htmlspecialchars($row['category']); ?></dd>
                                         </div>
                                         <div>
-                                            <dt>Stock (g)</dt>
-                                            <dd><?php echo format_grams($quantity); ?> - <?php echo $stockText; ?></dd>
+                                            <dt>Grams</dt>
+                                            <dd><?php echo format_grams($grams); ?></dd>
+                                        </div>
+                                        <div>
+                                            <dt>Quantity</dt>
+                                            <dd><?php echo format_quantity($quantity); ?></dd>
                                         </div>
                                         <div>
                                             <dt>Price</dt>
@@ -394,7 +411,7 @@ if ($stockFilter === 'low') {
                                         <div class="input-group mb-3">
                                             <input
                                                 type="number"
-                                                step="0.01"
+                                                step="1"
                                                 min="0"
                                                 name="quantity"
                                                 class="form-control"
@@ -402,7 +419,19 @@ if ($stockFilter === 'low') {
                                                 value="<?php echo htmlspecialchars($row['quantity']); ?>"
                                                 required
                                             >
-                                            <span class="input-group-text">grams</span>
+                                        </div>
+
+                                        <div class="input-group mb-3">
+                                            <input
+                                                type="number"
+                                                step="0.01"
+                                                min="0"
+                                                name="grams"
+                                                class="form-control"
+                                                placeholder="Grams"
+                                                value="<?php echo htmlspecialchars($row['grams']); ?>"
+                                                required
+                                            >
                                         </div>
 
                                         <input
@@ -435,7 +464,7 @@ if ($stockFilter === 'low') {
         <?php } ?>
         <?php } else { ?>
             <tr>
-                <td colspan="<?php echo $isAdminUser ? ($isPrintView ? 8 : 9) : ($isPrintView ? 7 : 8); ?>" class="empty-products">No products found.</td>
+                <td colspan="<?php echo $isAdminUser ? ($isPrintView ? 9 : 10) : ($isPrintView ? 8 : 9); ?>" class="empty-products">No products found.</td>
             </tr>
         <?php } ?>
 
@@ -464,8 +493,11 @@ if ($stockFilter === 'low') {
                     <input type="text" name="brand" class="form-control mb-3" placeholder="Brand" required>
 
                     <div class="input-group mb-3">
-                        <input type="number" step="0.01" min="0" name="quantity" class="form-control" placeholder="Quantity" required>
-                        <span class="input-group-text">grams</span>
+                        <input type="number" step="1" min="0" name="quantity" class="form-control" placeholder="Quantity" required>
+                    </div>
+
+                    <div class="input-group mb-3">
+                        <input type="number" step="0.01" min="0" name="grams" class="form-control" placeholder="Grams" required>
                     </div>
 
                     <input type="number" step="0.01" name="price" class="form-control mb-3" placeholder="Price" required>

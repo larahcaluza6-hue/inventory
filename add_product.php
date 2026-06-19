@@ -4,21 +4,24 @@ include 'auth.php';
 
 if (isset($_POST['add'])) {
     $userId = (int) $_SESSION['user_id'];
-    $raw_product_name = trim($_POST['product_name']);
-    $product_name = mysqli_real_escape_string($conn, $raw_product_name);
+    $product_name = mysqli_real_escape_string($conn, trim($_POST['product_name']));
     $category = mysqli_real_escape_string($conn, $_POST['category']);
     $brand = mysqli_real_escape_string($conn, $_POST['brand']);
     $quantity = (float) $_POST['quantity'];
+    $grams = (float) $_POST['grams'];
     $price = (float) $_POST['price'];
     $status = $quantity > 0 ? "Available" : "Sold Out";
 
-    $check = mysqli_query(
+    $check = mysqli_prepare(
         $conn,
-        "SELECT id FROM products WHERE user_id = $userId AND LOWER(product_name) = LOWER('$product_name') LIMIT 1"
+        "SELECT id FROM products WHERE user_id = ? AND grams = ? LIMIT 1"
     );
+    mysqli_stmt_bind_param($check, "id", $userId, $grams);
+    mysqli_stmt_execute($check);
+    $checkResult = mysqli_stmt_get_result($check);
 
-    if (mysqli_num_rows($check) > 0) {
-        header("Location: products.php?duplicate=" . urlencode($raw_product_name));
+    if (mysqli_num_rows($checkResult) > 0) {
+        header("Location: products.php?duplicate_grams=" . urlencode(format_grams($grams)));
         exit();
     }
 
@@ -38,8 +41,8 @@ if (isset($_POST['add'])) {
 
     mysqli_query(
         $conn,
-        "INSERT INTO products (user_id, product_name, category, brand, quantity, market_quantity, price, image, status)
-         VALUES ('$userId', '$product_name', '$category', '$brand', '$quantity', 0, '$price', '$image', '$status')"
+        "INSERT INTO products (user_id, product_name, category, brand, quantity, grams, market_quantity, market_grams, price, image, status)
+         VALUES ('$userId', '$product_name', '$category', '$brand', '$quantity', '$grams', 0, 0, '$price', '$image', '$status')"
     );
 }
 

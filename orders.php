@@ -17,7 +17,7 @@ $userId = (int) $_SESSION['user_id'];
 $isPrintView = isset($_GET['export']) && $_GET['export'] === 'print';
 $availableProducts = mysqli_query(
     $conn,
-    "SELECT id, product_name, quantity
+    "SELECT id, product_name, quantity, grams
      FROM products
      WHERE user_id = $userId
        AND quantity > 0
@@ -100,7 +100,7 @@ if ($search !== '') {
 
             <a href="orders.php?<?php echo http_build_query(array_filter(['search' => $search, 'export' => 'print'])); ?>" class="toolbar-btn" target="_blank" rel="noopener" onclick="openPrintExport(this.href); return false;">
                 <span aria-hidden="true">⇩</span>
-                Export
+                Print
             </a>
 
             <button type="button" class="toolbar-primary-btn" data-bs-toggle="modal" data-bs-target="#addMarketStockModal">
@@ -146,7 +146,8 @@ if ($search !== '') {
                 <th>Product Name</th>
                 <th>Brand</th>
                 <th>Category</th>
-                <th>Market Stock (g)</th>
+                <th>Quantity</th>
+                <th>Grams</th>
                 <th>Price</th>
                 <th>Status</th>
                 <?php if (!$isPrintView) { ?>
@@ -161,6 +162,7 @@ if ($search !== '') {
             <?php while ($row = mysqli_fetch_assoc($products)) { ?>
                 <?php
                 $marketQuantity = (float) $row['market_quantity'];
+                $marketGrams = (float) $row['market_grams'];
                 $stockText = 'In Stock';
                 $statusClass = 'success';
 
@@ -202,7 +204,9 @@ if ($search !== '') {
                         </span>
                     </td>
 
-                    <td class="stock-count stock-<?php echo $statusClass; ?>"><?php echo format_grams($marketQuantity); ?></td>
+                    <td class="stock-count stock-<?php echo $statusClass; ?>"><?php echo format_quantity($marketQuantity); ?></td>
+
+                    <td class="stock-count"><?php echo format_grams($marketGrams); ?></td>
 
                     <td class="price-cell">PHP <?php echo number_format((float) $row['price'], 2); ?></td>
 
@@ -295,7 +299,7 @@ if ($search !== '') {
                                             <div class="input-group mb-3">
                                                 <input
                                                     type="number"
-                                                    step="0.01"
+                                                    step="1"
                                                     name="market_quantity"
                                                     class="form-control"
                                                     min="0"
@@ -303,7 +307,19 @@ if ($search !== '') {
                                                     value="<?php echo htmlspecialchars($row['market_quantity']); ?>"
                                                     required
                                                 >
-                                                <span class="input-group-text">grams</span>
+                                            </div>
+
+                                            <div class="input-group mb-3">
+                                                <input
+                                                    type="number"
+                                                    step="0.01"
+                                                    name="market_grams"
+                                                    class="form-control"
+                                                    min="0"
+                                                    placeholder="Market Grams"
+                                                    value="<?php echo htmlspecialchars($row['market_grams']); ?>"
+                                                    required
+                                                >
                                             </div>
 
                                             <input
@@ -356,8 +372,12 @@ if ($search !== '') {
                                                 <dd><?php echo htmlspecialchars($row['category']); ?></dd>
                                             </div>
                                             <div>
-                                                <dt>Market Stock (g)</dt>
-                                                <dd><?php echo format_grams($marketQuantity); ?></dd>
+                                                <dt>Grams</dt>
+                                                <dd><?php echo format_grams($marketGrams); ?></dd>
+                                            </div>
+                                            <div>
+                                                <dt>Quantity</dt>
+                                                <dd><?php echo format_quantity($marketQuantity); ?></dd>
                                             </div>
                                             <div>
                                                 <dt>Price</dt>
@@ -375,7 +395,7 @@ if ($search !== '') {
             <?php } ?>
         <?php } else { ?>
             <tr>
-                <td colspan="<?php echo $isPrintView ? 7 : 8; ?>" class="empty-products">No products found.</td>
+                <td colspan="<?php echo $isPrintView ? 8 : 9; ?>" class="empty-products">No products found.</td>
             </tr>
         <?php } ?>
         </tbody>
@@ -407,14 +427,25 @@ if ($search !== '') {
                     <div class="input-group">
                         <input
                             type="number"
-                            step="0.01"
+                            step="1"
                             name="store_quantity"
                             class="form-control"
-                            min="0.01"
+                            min="1"
                             placeholder="Quantity"
                             required
                         >
-                        <span class="input-group-text">grams</span>
+                    </div>
+
+                    <div class="input-group mt-3">
+                        <input
+                            type="number"
+                            step="0.01"
+                            name="store_grams"
+                            class="form-control"
+                            min="0"
+                            placeholder="Grams"
+                            required
+                        >
                     </div>
                 </div>
 

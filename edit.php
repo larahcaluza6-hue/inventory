@@ -33,6 +33,7 @@ if (isset($_POST['update'])) {
     $category = $_POST['category'];
     $brand = $_POST['brand'];
     $quantity = (float) $_POST['quantity'];
+    $grams = (float) $_POST['grams'];
     $price = (float) $_POST['price'];
     $status = $quantity > 0 ? "Available" : "Sold Out";
 
@@ -52,36 +53,36 @@ if (isset($_POST['update'])) {
             $update = mysqli_prepare(
                 $conn,
                 "UPDATE products
-                 SET product_name = ?, category = ?, brand = ?, quantity = ?, price = ?, image = ?, status = ?
+                 SET product_name = ?, category = ?, brand = ?, quantity = ?, grams = ?, price = ?, image = ?, status = ?
                  WHERE id = ?"
             );
-            mysqli_stmt_bind_param($update, "sssddssi", $product_name, $category, $brand, $quantity, $price, $image, $status, $id);
+            mysqli_stmt_bind_param($update, "sssdddssi", $product_name, $category, $brand, $quantity, $grams, $price, $image, $status, $id);
         } else {
             $update = mysqli_prepare(
                 $conn,
                 "UPDATE products
-                 SET product_name = ?, category = ?, brand = ?, quantity = ?, price = ?, image = ?, status = ?
+                 SET product_name = ?, category = ?, brand = ?, quantity = ?, grams = ?, price = ?, image = ?, status = ?
                  WHERE id = ? AND user_id = ?"
             );
-            mysqli_stmt_bind_param($update, "sssddssii", $product_name, $category, $brand, $quantity, $price, $image, $status, $id, $userId);
+            mysqli_stmt_bind_param($update, "sssdddssii", $product_name, $category, $brand, $quantity, $grams, $price, $image, $status, $id, $userId);
         }
     } else {
         if ($isAdminUser) {
             $update = mysqli_prepare(
                 $conn,
                 "UPDATE products
-                 SET product_name = ?, category = ?, brand = ?, quantity = ?, price = ?, status = ?
+                 SET product_name = ?, category = ?, brand = ?, quantity = ?, grams = ?, price = ?, status = ?
                  WHERE id = ?"
             );
-            mysqli_stmt_bind_param($update, "sssddsi", $product_name, $category, $brand, $quantity, $price, $status, $id);
+            mysqli_stmt_bind_param($update, "sssdddsi", $product_name, $category, $brand, $quantity, $grams, $price, $status, $id);
         } else {
             $update = mysqli_prepare(
                 $conn,
                 "UPDATE products
-                 SET product_name = ?, category = ?, brand = ?, quantity = ?, price = ?, status = ?
+                 SET product_name = ?, category = ?, brand = ?, quantity = ?, grams = ?, price = ?, status = ?
                  WHERE id = ? AND user_id = ?"
             );
-            mysqli_stmt_bind_param($update, "sssddsii", $product_name, $category, $brand, $quantity, $price, $status, $id, $userId);
+            mysqli_stmt_bind_param($update, "sssdddsii", $product_name, $category, $brand, $quantity, $grams, $price, $status, $id, $userId);
         }
     }
 
@@ -139,16 +140,31 @@ if (isset($_POST['update'])) {
             required
         >
 
-        <input
-            type="number"
-            step="0.01"
-            min="0"
-            name="quantity"
-            class="form-control mb-3"
-            placeholder="Quantity (grams)"
-            value="<?php echo htmlspecialchars($product['quantity']); ?>"
-            required
-        >
+        <div class="input-group mb-3">
+            <input
+                type="number"
+                step="1"
+                min="0"
+                name="quantity"
+                class="form-control"
+                placeholder="Quantity"
+                value="<?php echo htmlspecialchars($product['quantity']); ?>"
+                required
+            >
+        </div>
+
+        <div class="input-group mb-3">
+            <input
+                type="number"
+                step="0.01"
+                min="0"
+                name="grams"
+                class="form-control"
+                placeholder="Grams"
+                value="<?php echo htmlspecialchars($product['grams']); ?>"
+                required
+            >
+        </div>
 
         <input
             type="number"

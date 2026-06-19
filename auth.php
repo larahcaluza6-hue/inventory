@@ -6,7 +6,9 @@ if(!isset($_SESSION['user_id'])){
 }
 
 function is_admin(){
-    return isset($_SESSION['role']) && $_SESSION['role'] === 'admin';
+    return isset($_SESSION['role'], $_SESSION['admin_login'])
+        && $_SESSION['role'] === 'admin'
+        && $_SESSION['admin_login'] === true;
 }
 
 ?>
