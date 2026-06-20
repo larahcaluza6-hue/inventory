@@ -140,6 +140,9 @@ mysqli_query(
         grams DECIMAL(10,2) NOT NULL DEFAULT 0.00,
         unit_price DECIMAL(10,2) NOT NULL DEFAULT 0.00,
         total_amount DECIMAL(10,2) NOT NULL DEFAULT 0.00,
+        cash_amount DECIMAL(10,2) NOT NULL DEFAULT 0.00,
+        change_amount DECIMAL(10,2) NOT NULL DEFAULT 0.00,
+        receipt_no VARCHAR(60) NOT NULL DEFAULT '',
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     ) ENGINE=MyISAM DEFAULT CHARSET=utf8mb4"
 );
@@ -148,6 +151,24 @@ $saleUserColumn = mysqli_query($conn, "SHOW COLUMNS FROM product_sales LIKE 'use
 
 if ($saleUserColumn && mysqli_num_rows($saleUserColumn) === 0) {
     mysqli_query($conn, "ALTER TABLE product_sales ADD user_id INT NULL AFTER id");
+}
+
+$saleCashColumn = mysqli_query($conn, "SHOW COLUMNS FROM product_sales LIKE 'cash_amount'");
+
+if ($saleCashColumn && mysqli_num_rows($saleCashColumn) === 0) {
+    mysqli_query($conn, "ALTER TABLE product_sales ADD cash_amount DECIMAL(10,2) NOT NULL DEFAULT 0.00 AFTER total_amount");
+}
+
+$saleChangeColumn = mysqli_query($conn, "SHOW COLUMNS FROM product_sales LIKE 'change_amount'");
+
+if ($saleChangeColumn && mysqli_num_rows($saleChangeColumn) === 0) {
+    mysqli_query($conn, "ALTER TABLE product_sales ADD change_amount DECIMAL(10,2) NOT NULL DEFAULT 0.00 AFTER cash_amount");
+}
+
+$saleReceiptColumn = mysqli_query($conn, "SHOW COLUMNS FROM product_sales LIKE 'receipt_no'");
+
+if ($saleReceiptColumn && mysqli_num_rows($saleReceiptColumn) === 0) {
+    mysqli_query($conn, "ALTER TABLE product_sales ADD receipt_no VARCHAR(60) NOT NULL DEFAULT '' AFTER change_amount");
 }
 
 mysqli_query(

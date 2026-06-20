@@ -29,6 +29,8 @@ if (isset($_POST['store'])) {
             $error = 'Product was not found.';
         } elseif ((float) $product['quantity'] < $storeQuantity) {
             $error = 'Not enough product stock available.';
+        } elseif (abs((float) $product['grams'] - $storeGrams) > 0.00001) {
+            $error = 'No grams in product.';
         } else {
             $newQuantity = (float) $product['quantity'] - $storeQuantity;
             $newMarketQuantity = (float) $product['market_quantity'] + $storeQuantity;
@@ -76,16 +78,20 @@ if (isset($_POST['store'])) {
     </div>
 
     <?php if ($error !== '') { ?>
-        <div class="alert alert-danger" role="alert">
+        <div class="alert alert-danger market-error-notification" id="marketErrorNotification" role="alert">
             <?php echo htmlspecialchars($error); ?>
+            <button type="button" class="btn-close" aria-label="Close" onclick="closeMarketErrorNotification()"></button>
         </div>
     <?php } ?>
 
-    <form method="POST" class="form-page mt-0">
-        <select name="product_id" class="form-control mb-3" required>
+    <form method="POST" class="form-page mt-0" id="addMarketStockForm">
+        <select name="product_id" class="form-control mb-3" id="marketProductSelect" required>
             <option value="">Select Product</option>
             <?php while ($availableProduct = mysqli_fetch_assoc($availableProducts)) { ?>
-                <option value="<?php echo (int) $availableProduct['id']; ?>">
+                <option
+                    value="<?php echo (int) $availableProduct['id']; ?>"
+                    data-grams="<?php echo htmlspecialchars($availableProduct['grams']); ?>"
+                >
                     <?php echo htmlspecialchars($availableProduct['product_name']); ?>
                 </option>
             <?php } ?>
@@ -108,11 +114,15 @@ if (isset($_POST['store'])) {
                 type="number"
                 step="0.01"
                 name="store_grams"
+                id="marketGramsInput"
                 class="form-control"
                 min="0"
                 placeholder="Grams"
                 required
             >
+        </div>
+        <div class="market-grams-suggestion" id="marketGramsSuggestion">
+            Select a product to see available grams.
         </div>
 
         <button type="submit" name="store" class="btn btn-success">
@@ -120,6 +130,78 @@ if (isset($_POST['store'])) {
         </button>
     </form>
 </div>
+
+<script>
+const addMarketStockForm = document.getElementById('addMarketStockForm');
+const marketProductSelect = document.getElementById('marketProductSelect');
+const marketGramsInput = document.getElementById('marketGramsInput');
+const marketGramsSuggestion = document.getElementById('marketGramsSuggestion');
+
+function formatSuggestionGrams(value) {
+    const grams = parseFloat(value || '0');
+
+    return Number.isFinite(grams) ? grams.toLocaleString(undefined, {
+        minimumFractionDigits: 0,
+        maximumFractionDigits: 2
+    }) + 'g' : '0g';
+}
+
+function updateMarketGramsSuggestion() {
+    const selectedOption = marketProductSelect.options[marketProductSelect.selectedIndex];
+    const productGrams = selectedOption ? selectedOption.dataset.grams || '' : '';
+
+    if (!productGrams) {
+        marketGramsSuggestion.textContent = 'Select a product to see available grams.';
+        marketGramsInput.placeholder = 'Grams';
+        return;
+    }
+
+    marketGramsSuggestion.textContent = 'Available grams: ' + formatSuggestionGrams(productGrams);
+    marketGramsInput.placeholder = formatSuggestionGrams(productGrams);
+}
+
+function showMarketErrorNotification(message) {
+    let notification = document.getElementById('marketErrorNotification');
+
+    if (!notification) {
+        notification = document.createElement('div');
+        notification.id = 'marketErrorNotification';
+        notification.className = 'alert alert-danger market-error-notification';
+        notification.setAttribute('role', 'alert');
+        document.body.appendChild(notification);
+    }
+
+    notification.innerHTML = message + '<button type="button" class="btn-close" aria-label="Close" onclick="closeMarketErrorNotification()"></button>';
+    notification.classList.add('show');
+}
+
+function closeMarketErrorNotification() {
+    const notification = document.getElementById('marketErrorNotification');
+
+    if (notification) {
+        notification.classList.remove('show');
+        setTimeout(function () {
+            notification.remove();
+        }, 180);
+    }
+}
+
+if (addMarketStockForm) {
+    updateMarketGramsSuggestion();
+    marketProductSelect.addEventListener('change', updateMarketGramsSuggestion);
+
+    addMarketStockForm.addEventListener('submit', function (event) {
+        const selectedOption = marketProductSelect.options[marketProductSelect.selectedIndex];
+        const productGrams = selectedOption ? parseFloat(selectedOption.dataset.grams || '0') : 0;
+        const enteredGrams = parseFloat(marketGramsInput.value || '0');
+
+        if (Math.abs(productGrams - enteredGrams) > 0.00001) {
+            event.preventDefault();
+            showMarketErrorNotification('No grams in product.');
+        }
+    });
+}
+</script>
 
 </body>
 </html>

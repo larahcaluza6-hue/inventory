@@ -182,7 +182,7 @@ $summary = mysqli_fetch_assoc($summaryResult);
     <?php include 'sidebar.php'; ?>
 <?php } ?>
 
-<div class="main">
+<div class="main sales-dashboard">
     <?php if ($isPrintView) { ?>
         <div class="print-export-header">
             <div>
@@ -220,7 +220,7 @@ $summary = mysqli_fetch_assoc($summaryResult);
     <?php } ?>
 
     <?php if (!$isPrintView && $message !== '') { ?>
-        <div class="alert alert-success alert-dismissible fade show" role="alert">
+        <div class="alert alert-success alert-dismissible fade show sale-success-notification" id="saleSuccessNotification" role="alert">
             <?php echo htmlspecialchars($message); ?>
             <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
         </div>
@@ -236,23 +236,32 @@ $summary = mysqli_fetch_assoc($summaryResult);
     <?php if (!$isPrintView) { ?>
         <div class="row dashboard-cards sales-summary-cards">
             <div class="col-lg-4 col-sm-6">
-                <div class="card-box blue">
-                    <h5>Total Sales</h5>
-                    <h1><?php echo (int) $summary['sale_count']; ?></h1>
+                <div class="card-box blue admin-metric-card">
+                    <span class="admin-metric-icon admin-metric-sales" aria-hidden="true"></span>
+                    <div>
+                        <h5>Total Sales</h5>
+                        <h1><?php echo (int) $summary['sale_count']; ?></h1>
+                    </div>
                 </div>
             </div>
 
             <div class="col-lg-4 col-sm-6">
-                <div class="card-box green">
-                    <h5>Items Sold</h5>
-                    <h1><?php echo format_quantity($summary['quantity_total']); ?></h1>
+                <div class="card-box green admin-metric-card">
+                    <span class="admin-metric-icon admin-metric-products" aria-hidden="true"></span>
+                    <div>
+                        <h5>Items Sold</h5>
+                        <h1><?php echo format_quantity($summary['quantity_total']); ?></h1>
+                    </div>
                 </div>
             </div>
 
             <div class="col-lg-4 col-sm-6">
-                <div class="card-box blue">
-                    <h5>Total Amount</h5>
-                    <h1>PHP <?php echo number_format((float) $summary['amount_total'], 2); ?></h1>
+                <div class="card-box blue admin-metric-card">
+                    <span class="admin-metric-icon admin-metric-amount" aria-hidden="true"></span>
+                    <div>
+                        <h5>Total Amount</h5>
+                        <h1>PHP <?php echo number_format((float) $summary['amount_total'], 2); ?></h1>
+                    </div>
                 </div>
             </div>
         </div>
@@ -271,6 +280,9 @@ $summary = mysqli_fetch_assoc($summaryResult);
                     <th>Unit Price</th>
                     <th>Total</th>
                     <th>Date</th>
+                    <?php if (!$isPrintView) { ?>
+                        <th>Receipt</th>
+                    <?php } ?>
                 </tr>
             </thead>
 
@@ -288,12 +300,28 @@ $summary = mysqli_fetch_assoc($summaryResult);
                             <td>PHP <?php echo number_format((float) $sale['unit_price'], 2); ?></td>
                             <td>PHP <?php echo number_format((float) $sale['total_amount'], 2); ?></td>
                             <td><?php echo htmlspecialchars($sale['created_at']); ?></td>
+                            <?php if (!$isPrintView) { ?>
+                                <td>
+                                    <?php if (($sale['receipt_no'] ?? '') !== '') { ?>
+                                        <a
+                                            href="receipt.php?receipt=<?php echo urlencode($sale['receipt_no']); ?>"
+                                            class="toolbar-btn receipt-table-btn"
+                                            target="_blank"
+                                            rel="noopener"
+                                        >
+                                            Print
+                                        </a>
+                                    <?php } else { ?>
+                                        <span class="text-muted">-</span>
+                                    <?php } ?>
+                                </td>
+                            <?php } ?>
                         </tr>
                         <?php $saleNumber++; ?>
                     <?php } ?>
                 <?php } else { ?>
                     <tr>
-                        <td colspan="9" class="empty-products">No sales recorded yet.</td>
+                        <td colspan="<?php echo $isPrintView ? 9 : 10; ?>" class="empty-products">No sales recorded yet.</td>
                     </tr>
                 <?php } ?>
             </tbody>
@@ -305,7 +333,7 @@ $summary = mysqli_fetch_assoc($summaryResult);
 <div class="modal fade" id="sellProductModal" tabindex="-1" aria-labelledby="sellProductModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered modal-lg">
         <div class="modal-content">
-            <form action="sell_product.php" method="POST">
+            <form action="sell_product.php" method="POST" id="sellProductForm">
                 <div class="modal-header">
                     <h5 class="modal-title" id="sellProductModalLabel">Multiple Purchase</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
@@ -371,6 +399,23 @@ $summary = mysqli_fetch_assoc($summaryResult);
                             <span>Grand Total</span>
                             <strong id="saleGrandTotal">PHP 0.00</strong>
                         </div>
+                        <div class="sale-payment-row">
+                            <label for="saleCashAmount">Cash Paid</label>
+                            <input
+                                type="number"
+                                step="0.01"
+                                min="0"
+                                name="cash_amount"
+                                id="saleCashAmount"
+                                class="form-control"
+                                placeholder="0.00"
+                                required
+                            >
+                        </div>
+                        <div>
+                            <span>Change</span>
+                            <strong id="saleChangeDue">PHP 0.00</strong>
+                        </div>
                     </div>
                 </div>
 
@@ -417,6 +462,11 @@ const addSaleItem = document.getElementById('addSaleItem');
 const saleItemCount = document.getElementById('saleItemCount');
 const saleTotalQuantity = document.getElementById('saleTotalQuantity');
 const saleGrandTotal = document.getElementById('saleGrandTotal');
+const sellProductForm = document.getElementById('sellProductForm');
+const saleCashAmount = document.getElementById('saleCashAmount');
+const saleChangeDue = document.getElementById('saleChangeDue');
+const saleSuccessNotification = document.getElementById('saleSuccessNotification');
+let currentGrandTotal = 0;
 
 function formatPeso(value) {
     return 'PHP ' + value.toLocaleString(undefined, {
@@ -454,6 +504,22 @@ function updateSaleTotal() {
     saleItemCount.textContent = itemCount.toLocaleString();
     saleTotalQuantity.textContent = totalQuantity.toLocaleString();
     saleGrandTotal.textContent = formatPeso(grandTotal);
+    currentGrandTotal = grandTotal;
+    updateSaleChange();
+}
+
+function updateSaleChange() {
+    const cashPaidValue = parseFloat(saleCashAmount ? saleCashAmount.value || '0' : '0');
+    const cashPaid = Number.isFinite(cashPaidValue) ? cashPaidValue : 0;
+    const changeDue = Math.max(0, cashPaid - currentGrandTotal);
+
+    if (saleCashAmount && cashPaid >= currentGrandTotal) {
+        saleCashAmount.setCustomValidity('');
+    }
+
+    if (saleChangeDue) {
+        saleChangeDue.textContent = formatPeso(changeDue);
+    }
 }
 
 function bindSaleRow(row) {
@@ -467,8 +533,41 @@ function bindSaleRow(row) {
     });
 }
 
+function closeSaleSuccessNotification() {
+    if (saleSuccessNotification) {
+        saleSuccessNotification.classList.remove('show');
+        setTimeout(function () {
+            saleSuccessNotification.remove();
+        }, 180);
+    }
+}
+
+if (saleSuccessNotification) {
+    setTimeout(closeSaleSuccessNotification, 5000);
+}
+
 if (saleItems) {
     saleItems.querySelectorAll('.sale-item-row').forEach(bindSaleRow);
+
+    if (saleCashAmount) {
+        saleCashAmount.addEventListener('input', updateSaleChange);
+    }
+
+    if (sellProductForm) {
+        sellProductForm.addEventListener('submit', function (event) {
+            const cashPaidValue = parseFloat(saleCashAmount ? saleCashAmount.value || '0' : '0');
+            const cashPaid = Number.isFinite(cashPaidValue) ? cashPaidValue : 0;
+
+            if (cashPaid < currentGrandTotal) {
+                event.preventDefault();
+                saleCashAmount.setCustomValidity('Cash paid must be equal to or greater than the grand total.');
+                saleCashAmount.reportValidity();
+                return;
+            }
+
+            saleCashAmount.setCustomValidity('');
+        });
+    }
 
     addSaleItem.addEventListener('click', function () {
         const firstRow = saleItems.querySelector('.sale-item-row');

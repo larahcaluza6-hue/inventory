@@ -13,6 +13,7 @@ if (isset($_GET['added'])) {
 }
 
 $search = isset($_GET['search']) ? trim($_GET['search']) : '';
+$stockFilter = isset($_GET['stock']) ? $_GET['stock'] : '';
 $userId = (int) $_SESSION['user_id'];
 $isPrintView = isset($_GET['export']) && $_GET['export'] === 'print';
 $availableProducts = mysqli_query(
@@ -24,7 +25,24 @@ $availableProducts = mysqli_query(
      ORDER BY product_name ASC"
 );
 
-if ($search !== '') {
+if ($stockFilter === 'low') {
+    $query = "SELECT * FROM products
+              WHERE user_id = $userId
+                AND market_quantity > 0
+                AND market_quantity < 10";
+
+    if ($search !== '') {
+        $safeSearch = mysqli_real_escape_string($conn, $search);
+        $query .= " AND (
+                product_name LIKE '%$safeSearch%'
+             OR category LIKE '%$safeSearch%'
+             OR brand LIKE '%$safeSearch%'
+           )";
+    }
+
+    $query .= " ORDER BY market_quantity ASC, product_name ASC";
+    $products = mysqli_query($conn, $query);
+} elseif ($search !== '') {
     $safeSearch = mysqli_real_escape_string($conn, $search);
     $products = mysqli_query(
         $conn,
@@ -98,9 +116,12 @@ if ($search !== '') {
                     placeholder="Search market"
                     value="<?php echo htmlspecialchars($search); ?>"
                 >
+                <?php if ($stockFilter !== '') { ?>
+                    <input type="hidden" name="stock" value="<?php echo htmlspecialchars($stockFilter); ?>">
+                <?php } ?>
                 <?php if ($search !== '') { ?>
                     <a
-                        href="orders.php"
+                        href="orders.php?<?php echo http_build_query(array_filter(['stock' => $stockFilter])); ?>"
                         class="search-clear-btn"
                         aria-label="Clear search"
                         title="Clear search"
@@ -113,7 +134,7 @@ if ($search !== '') {
                 <?php } ?>
             </form>
 
-            <a href="orders.php?<?php echo http_build_query(array_filter(['search' => $search, 'export' => 'print'])); ?>" class="toolbar-btn" target="_blank" rel="noopener" onclick="openPrintExport(this.href); return false;">
+            <a href="orders.php?<?php echo http_build_query(array_filter(['search' => $search, 'stock' => $stockFilter, 'export' => 'print'])); ?>" class="toolbar-btn" target="_blank" rel="noopener" onclick="openPrintExport(this.href); return false;">
                 <span aria-hidden="true">⇩</span>
                 Print
             </a>
@@ -133,6 +154,13 @@ if ($search !== '') {
         </div>
     <?php } ?>
 
+    <?php if (!$isPrintView && $stockFilter === 'low') { ?>
+        <div class="alert alert-info d-flex justify-content-between align-items-center" role="alert">
+            <span>Showing market products with stock less than 10.</span>
+            <a href="orders.php" class="btn btn-sm btn-secondary">Back</a>
+        </div>
+    <?php } ?>
+
     <?php if (!$isPrintView) { ?>
     <form method="GET" class="search-form show-search market-search legacy-search-form">
         <input
@@ -142,13 +170,16 @@ if ($search !== '') {
             placeholder="Search market"
             value="<?php echo htmlspecialchars($search); ?>"
         >
+        <?php if ($stockFilter !== '') { ?>
+            <input type="hidden" name="stock" value="<?php echo htmlspecialchars($stockFilter); ?>">
+        <?php } ?>
 
         <button type="submit" class="btn btn-primary search-icon-btn" aria-label="Search">
             &#128269;
         </button>
 
         <?php if ($search !== '') { ?>
-            <a href="orders.php" class="btn btn-secondary">Back</a>
+            <a href="orders.php?<?php echo http_build_query(array_filter(['stock' => $stockFilter])); ?>" class="btn btn-secondary">Back</a>
         <?php } ?>
     </form>
     <?php } ?>
@@ -423,17 +454,20 @@ if ($search !== '') {
 <div class="modal fade" id="addMarketStockModal" tabindex="-1" aria-labelledby="addMarketStockModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
-            <form action="add_market_stock.php" method="POST">
+            <form action="add_market_stock.php" method="POST" id="addMarketStockModalForm">
                 <div class="modal-header">
                     <h5 class="modal-title" id="addMarketStockModalLabel">Add To Market</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
 
                 <div class="modal-body">
-                    <select name="product_id" class="form-control mb-3" required>
+                    <select name="product_id" class="form-control mb-3" id="marketModalProductSelect" required>
                         <option value="">Select Product</option>
                         <?php while ($availableProduct = mysqli_fetch_assoc($availableProducts)) { ?>
-                            <option value="<?php echo (int) $availableProduct['id']; ?>">
+                            <option
+                                value="<?php echo (int) $availableProduct['id']; ?>"
+                                data-grams="<?php echo htmlspecialchars($availableProduct['grams']); ?>"
+                            >
                                 <?php echo htmlspecialchars($availableProduct['product_name']); ?>
                             </option>
                         <?php } ?>
@@ -456,11 +490,15 @@ if ($search !== '') {
                             type="number"
                             step="0.01"
                             name="store_grams"
+                            id="marketModalGramsInput"
                             class="form-control"
                             min="0"
                             placeholder="Grams"
                             required
                         >
+                    </div>
+                    <div class="market-grams-suggestion" id="marketModalGramsSuggestion">
+                        Select a product to see available grams.
                     </div>
                 </div>
 
@@ -500,6 +538,76 @@ window.addEventListener('afterprint', function () {
 <script>
 function openPrintExport(url) {
     window.open(url, 'printExport', 'width=1100,height=800');
+}
+
+const addMarketStockModalForm = document.getElementById('addMarketStockModalForm');
+const marketModalProductSelect = document.getElementById('marketModalProductSelect');
+const marketModalGramsInput = document.getElementById('marketModalGramsInput');
+const marketModalGramsSuggestion = document.getElementById('marketModalGramsSuggestion');
+
+function formatSuggestionGrams(value) {
+    const grams = parseFloat(value || '0');
+
+    return Number.isFinite(grams) ? grams.toLocaleString(undefined, {
+        minimumFractionDigits: 0,
+        maximumFractionDigits: 2
+    }) + 'g' : '0g';
+}
+
+function updateMarketModalGramsSuggestion() {
+    const selectedOption = marketModalProductSelect.options[marketModalProductSelect.selectedIndex];
+    const productGrams = selectedOption ? selectedOption.dataset.grams || '' : '';
+
+    if (!productGrams) {
+        marketModalGramsSuggestion.textContent = 'Select a product to see available grams.';
+        marketModalGramsInput.placeholder = 'Grams';
+        return;
+    }
+
+    marketModalGramsSuggestion.textContent = 'Available grams: ' + formatSuggestionGrams(productGrams);
+    marketModalGramsInput.placeholder = formatSuggestionGrams(productGrams);
+}
+
+function showMarketErrorNotification(message) {
+    let notification = document.getElementById('marketErrorNotification');
+
+    if (!notification) {
+        notification = document.createElement('div');
+        notification.id = 'marketErrorNotification';
+        notification.className = 'alert alert-danger market-error-notification';
+        notification.setAttribute('role', 'alert');
+        document.body.appendChild(notification);
+    }
+
+    notification.innerHTML = message + '<button type="button" class="btn-close" aria-label="Close" onclick="closeMarketErrorNotification()"></button>';
+    notification.classList.add('show');
+}
+
+function closeMarketErrorNotification() {
+    const notification = document.getElementById('marketErrorNotification');
+
+    if (notification) {
+        notification.classList.remove('show');
+        setTimeout(function () {
+            notification.remove();
+        }, 180);
+    }
+}
+
+if (addMarketStockModalForm) {
+    updateMarketModalGramsSuggestion();
+    marketModalProductSelect.addEventListener('change', updateMarketModalGramsSuggestion);
+
+    addMarketStockModalForm.addEventListener('submit', function (event) {
+        const selectedOption = marketModalProductSelect.options[marketModalProductSelect.selectedIndex];
+        const productGrams = selectedOption ? parseFloat(selectedOption.dataset.grams || '0') : 0;
+        const enteredGrams = parseFloat(marketModalGramsInput.value || '0');
+
+        if (Math.abs(productGrams - enteredGrams) > 0.00001) {
+            event.preventDefault();
+            showMarketErrorNotification('No grams in product.');
+        }
+    });
 }
 </script>
 <?php } ?>
