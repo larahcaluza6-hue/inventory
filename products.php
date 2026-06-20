@@ -178,6 +178,13 @@ if ($stockFilter === 'low') {
         </div>
     <?php } ?>
 
+    <?php if (!$isPrintView && isset($_GET['combined'])) { ?>
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            Same product found. Quantity was added to the existing product.
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    <?php } ?>
+
     <?php if (!$isPrintView && isset($_GET['error'])) { ?>
         <div class="alert alert-danger alert-dismissible fade show" role="alert">
             <?php echo htmlspecialchars($_GET['error']); ?>
