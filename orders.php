@@ -168,7 +168,7 @@ if ($stockFilter === 'low') {
     <?php } ?>
 
     <?php if (!$isPrintView && $message !== '') { ?>
-        <div class="alert alert-success alert-dismissible fade show" role="alert">
+        <div class="alert alert-success alert-dismissible fade show sale-success-notification" id="marketSuccessNotification" role="alert">
             <?php echo htmlspecialchars($message); ?>
             <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
         </div>
