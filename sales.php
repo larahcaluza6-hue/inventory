@@ -340,8 +340,6 @@ $summary = mysqli_fetch_assoc($summaryResult);
                 </div>
 
                 <div class="modal-body">
-                    <input type="text" name="customer_name" class="form-control mb-3" placeholder="Customer Name">
-
                     <div class="sale-items" id="saleItems">
                         <div class="sale-item-row">
                             <select name="product_id[]" class="form-control sale-product-select" required>
