@@ -14,13 +14,11 @@ $availableProducts = mysqli_query(
 $productGroups = [];
 
 while ($availableProduct = mysqli_fetch_assoc($availableProducts)) {
-    $groupKey = strtolower(trim($availableProduct['product_name'])) . '|' . strtolower(trim($availableProduct['brand'])) . '|' . strtolower(trim($availableProduct['category']));
+    $groupKey = strtolower(trim($availableProduct['product_name']));
 
     if (!isset($productGroups[$groupKey])) {
         $productGroups[$groupKey] = [
             'label' => $availableProduct['product_name'],
-            'brand' => $availableProduct['brand'],
-            'category' => $availableProduct['category'],
             'sizes' => []
         ];
     }
@@ -28,7 +26,9 @@ while ($availableProduct = mysqli_fetch_assoc($availableProducts)) {
     $productGroups[$groupKey]['sizes'][] = [
         'id' => (int) $availableProduct['id'],
         'grams' => (float) $availableProduct['grams'],
-        'quantity' => (float) $availableProduct['quantity']
+        'quantity' => (float) $availableProduct['quantity'],
+        'brand' => $availableProduct['brand'],
+        'category' => $availableProduct['category']
     ];
 }
 
@@ -116,8 +116,6 @@ if (isset($_POST['store'])) {
                     data-sizes="<?php echo htmlspecialchars(json_encode($productGroup['sizes']), ENT_QUOTES); ?>"
                 >
                     <?php echo htmlspecialchars($productGroup['label']); ?>
-                    - <?php echo htmlspecialchars($productGroup['brand']); ?>
-                    - <?php echo htmlspecialchars($productGroup['category']); ?>
                 </option>
             <?php } ?>
         </select>
@@ -180,9 +178,13 @@ function updateMarketGramsSuggestion() {
 
     sizes.forEach(function (size) {
         const option = document.createElement('option');
+        const details = [size.brand, size.category].filter(Boolean).join(' - ');
         option.value = size.id;
         option.dataset.grams = size.grams;
-        option.textContent = formatSuggestionGrams(size.grams) + ' - ' + parseFloat(size.quantity || '0').toLocaleString() + ' available';
+        option.textContent = formatSuggestionGrams(size.grams)
+            + (details ? ' - ' + details : '')
+            + ' - ' + parseFloat(size.quantity || '0').toLocaleString()
+            + ' available';
         marketGramsSelect.appendChild(option);
     });
 
