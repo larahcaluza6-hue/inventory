@@ -357,6 +357,7 @@ $summary = mysqli_fetch_assoc($summaryResult);
                                         data-unit-grams="<?php echo htmlspecialchars($unitGrams); ?>"
                                     >
                                         <?php echo htmlspecialchars($product['product_name']); ?>
+                                        - <?php echo format_grams($marketGrams); ?>
                                         - <?php echo format_quantity($product['market_quantity']); ?> available
                                         - PHP <?php echo number_format((float) $product['price'], 2); ?>
                                     </option>
