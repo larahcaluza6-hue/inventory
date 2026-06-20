@@ -29,13 +29,44 @@ if (!$product) {
 }
 
 if (isset($_POST['update'])) {
-    $product_name = $_POST['product_name'];
-    $category = $_POST['category'];
-    $brand = $_POST['brand'];
+    $product_name = trim($_POST['product_name']);
+    $category = trim($_POST['category']);
+    $brand = trim($_POST['brand']);
     $quantity = (float) $_POST['quantity'];
     $grams = (float) $_POST['grams'];
     $price = (float) $_POST['price'];
     $status = $quantity > 0 ? "Available" : "Sold Out";
+
+    if ($quantity < 1) {
+        header("Location: products.php?error=" . urlencode("Quantity must be at least 1."));
+        exit();
+    }
+
+    if ($grams <= 0) {
+        header("Location: products.php?error=" . urlencode("Grams must be greater than 0."));
+        exit();
+    }
+
+    $duplicate = mysqli_prepare(
+        $conn,
+        "SELECT id
+         FROM products
+         WHERE user_id = ?
+           AND product_name = ?
+           AND category = ?
+           AND brand = ?
+           AND grams = ?
+           AND id <> ?
+         LIMIT 1"
+    );
+    mysqli_stmt_bind_param($duplicate, "isssdi", $product['user_id'], $product_name, $category, $brand, $grams, $id);
+    mysqli_stmt_execute($duplicate);
+    $duplicateResult = mysqli_stmt_get_result($duplicate);
+
+    if (mysqli_num_rows($duplicateResult) > 0) {
+        header("Location: products.php?duplicate_grams=" . urlencode(format_grams($grams)));
+        exit();
+    }
 
     $uploadDir = __DIR__ . "/assets/uploads/";
 
@@ -144,7 +175,7 @@ if (isset($_POST['update'])) {
             <input
                 type="number"
                 step="1"
-                min="0"
+                min="1"
                 name="quantity"
                 class="form-control"
                 placeholder="Quantity"
@@ -157,7 +188,7 @@ if (isset($_POST['update'])) {
             <input
                 type="number"
                 step="0.01"
-                min="0"
+                min="0.01"
                 name="grams"
                 class="form-control"
                 placeholder="Grams"

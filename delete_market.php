@@ -6,7 +6,12 @@ if (isset($_GET['id'])) {
     $id = (int) $_GET['id'];
     $userId = (int) $_SESSION['user_id'];
 
-    $stmt = mysqli_prepare($conn, "DELETE FROM products WHERE id = ? AND user_id = ?");
+    $stmt = mysqli_prepare(
+        $conn,
+        "UPDATE products
+         SET market_quantity = 0, market_grams = 0
+         WHERE id = ? AND user_id = ?"
+    );
     mysqli_stmt_bind_param($stmt, "ii", $id, $userId);
     mysqli_stmt_execute($stmt);
 }

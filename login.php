@@ -110,14 +110,13 @@ if (isset($_POST['login']) || isset($_POST['admin_login'])) {
     <title>Login</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="style.css?v=6">
+    <link rel="stylesheet" href="style.css?v=<?php echo filemtime('style.css'); ?>">
 </head>
 
 <body class="auth-page">
 
 <nav class="auth-topbar" aria-label="Account actions">
     <button type="button" data-bs-toggle="modal" data-bs-target="#loginModal">Login</button>
-    <button type="button" data-bs-toggle="modal" data-bs-target="#registerModal">Register</button>
     <button type="button" data-bs-toggle="modal" data-bs-target="#adminModal">Admin</button>
 </nav>
 
@@ -158,6 +157,13 @@ if (isset($_POST['login']) || isset($_POST['admin_login'])) {
 
                     <button type="submit" name="login" class="auth-submit">Login</button>
                 </form>
+
+                <p class="auth-switch auth-modal-switch">
+                    <span>Don't have an account?</span>
+                    <a href="#" data-bs-toggle="modal" data-bs-target="#registerModal" data-bs-dismiss="modal">
+                        Register
+                    </a>
+                </p>
             </div>
         </div>
     </div>

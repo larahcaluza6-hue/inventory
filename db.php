@@ -17,7 +17,9 @@ if(!$conn){
 
 if (!function_exists('format_grams')) {
     function format_grams($value) {
-        return number_format((float) $value, 2);
+        $formatted = rtrim(rtrim(number_format((float) $value, 2, '.', ''), '0'), '.');
+
+        return $formatted . 'g';
     }
 }
 

@@ -29,20 +29,17 @@ if (isset($_POST['store'])) {
             $error = 'Product was not found.';
         } elseif ((float) $product['quantity'] < $storeQuantity) {
             $error = 'Not enough product stock available.';
-        } elseif ((float) $product['grams'] < $storeGrams) {
-            $error = 'Not enough product grams available.';
         } else {
             $newQuantity = (float) $product['quantity'] - $storeQuantity;
-            $newGrams = (float) $product['grams'] - $storeGrams;
             $newMarketQuantity = (float) $product['market_quantity'] + $storeQuantity;
             $newMarketGrams = (float) $product['market_grams'] + $storeGrams;
             $status = $newQuantity > 0 ? 'Available' : 'Sold Out';
 
             $update = mysqli_prepare(
                 $conn,
-                "UPDATE products SET quantity = ?, grams = ?, market_quantity = ?, market_grams = ?, status = ? WHERE id = ? AND user_id = ?"
+                "UPDATE products SET quantity = ?, market_quantity = ?, market_grams = ?, status = ? WHERE id = ? AND user_id = ?"
             );
-            mysqli_stmt_bind_param($update, "ddddsii", $newQuantity, $newGrams, $newMarketQuantity, $newMarketGrams, $status, $productId, $userId);
+            mysqli_stmt_bind_param($update, "dddsii", $newQuantity, $newMarketQuantity, $newMarketGrams, $status, $productId, $userId);
             mysqli_stmt_execute($update);
 
             $transaction = mysqli_prepare(

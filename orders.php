@@ -30,6 +30,7 @@ if ($search !== '') {
         $conn,
         "SELECT * FROM products
          WHERE user_id = $userId
+           AND (market_quantity > 0 OR market_grams > 0)
            AND (
                 product_name LIKE '%$safeSearch%'
              OR category LIKE '%$safeSearch%'
@@ -38,7 +39,13 @@ if ($search !== '') {
          ORDER BY product_name ASC"
     );
 } else {
-    $products = mysqli_query($conn, "SELECT * FROM products WHERE user_id = $userId ORDER BY product_name ASC");
+    $products = mysqli_query(
+        $conn,
+        "SELECT * FROM products
+         WHERE user_id = $userId
+           AND (market_quantity > 0 OR market_grams > 0)
+         ORDER BY product_name ASC"
+    );
 }
 
 ?>
@@ -91,21 +98,24 @@ if ($search !== '') {
                     placeholder="Search market"
                     value="<?php echo htmlspecialchars($search); ?>"
                 >
+                <?php if ($search !== '') { ?>
+                    <a
+                        href="orders.php"
+                        class="search-clear-btn"
+                        aria-label="Clear search"
+                        title="Clear search"
+                    >
+                        <svg viewBox="0 0 24 24" aria-hidden="true">
+                            <path d="M18 6 6 18"></path>
+                            <path d="m6 6 12 12"></path>
+                        </svg>
+                    </a>
+                <?php } ?>
             </form>
-
-            <button type="button" class="toolbar-btn">
-                <span aria-hidden="true">▽</span>
-                Filter
-            </button>
 
             <a href="orders.php?<?php echo http_build_query(array_filter(['search' => $search, 'export' => 'print'])); ?>" class="toolbar-btn" target="_blank" rel="noopener" onclick="openPrintExport(this.href); return false;">
                 <span aria-hidden="true">⇩</span>
                 Print
-            </a>
-
-            <a href="sales.php" class="toolbar-btn">
-                <span aria-hidden="true">+</span>
-                Sell Product
             </a>
 
             <button type="button" class="toolbar-primary-btn" data-bs-toggle="modal" data-bs-target="#addMarketStockModal">

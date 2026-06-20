@@ -136,6 +136,19 @@ if ($stockFilter === 'low') {
                 <?php if ($stockFilter !== '') { ?>
                     <input type="hidden" name="stock" value="<?php echo htmlspecialchars($stockFilter); ?>">
                 <?php } ?>
+                <?php if ($search !== '') { ?>
+                    <a
+                        href="products.php?<?php echo http_build_query(array_filter(['stock' => $stockFilter])); ?>"
+                        class="search-clear-btn"
+                        aria-label="Clear search"
+                        title="Clear search"
+                    >
+                        <svg viewBox="0 0 24 24" aria-hidden="true">
+                            <path d="M18 6 6 18"></path>
+                            <path d="m6 6 12 12"></path>
+                        </svg>
+                    </a>
+                <?php } ?>
             </form>
 
             <a href="products.php?<?php echo http_build_query(array_filter(['search' => $search, 'stock' => $stockFilter, 'export' => 'print'])); ?>" class="toolbar-btn" target="_blank" rel="noopener" onclick="openPrintExport(this.href); return false;">
@@ -160,7 +173,14 @@ if ($stockFilter === 'low') {
 
     <?php if (!$isPrintView && isset($_GET['duplicate_grams'])) { ?>
         <div class="alert alert-warning alert-dismissible fade show" role="alert">
-            Grams <strong><?php echo htmlspecialchars($_GET['duplicate_grams']); ?></strong> already exists.
+            This product with <strong><?php echo htmlspecialchars($_GET['duplicate_grams']); ?></strong> grams already exists.
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    <?php } ?>
+
+    <?php if (!$isPrintView && isset($_GET['error'])) { ?>
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            <?php echo htmlspecialchars($_GET['error']); ?>
             <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
         </div>
     <?php } ?>
@@ -412,7 +432,7 @@ if ($stockFilter === 'low') {
                                             <input
                                                 type="number"
                                                 step="1"
-                                                min="0"
+                                                min="1"
                                                 name="quantity"
                                                 class="form-control"
                                                 placeholder="Quantity"
@@ -425,7 +445,7 @@ if ($stockFilter === 'low') {
                                             <input
                                                 type="number"
                                                 step="0.01"
-                                                min="0"
+                                                min="0.01"
                                                 name="grams"
                                                 class="form-control"
                                                 placeholder="Grams"
@@ -493,11 +513,11 @@ if ($stockFilter === 'low') {
                     <input type="text" name="brand" class="form-control mb-3" placeholder="Brand" required>
 
                     <div class="input-group mb-3">
-                        <input type="number" step="1" min="0" name="quantity" class="form-control" placeholder="Quantity" required>
+                        <input type="number" step="1" min="1" name="quantity" class="form-control" placeholder="Quantity" required>
                     </div>
 
                     <div class="input-group mb-3">
-                        <input type="number" step="0.01" min="0" name="grams" class="form-control" placeholder="Grams" required>
+                        <input type="number" step="0.01" min="0.01" name="grams" class="form-control" placeholder="Grams" required>
                     </div>
 
                     <input type="number" step="0.01" name="price" class="form-control mb-3" placeholder="Price" required>

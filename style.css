@@ -448,6 +448,23 @@ canvas{
     text-decoration:none;
 }
 
+.auth-modal-switch{
+    margin-top:22px;
+    color:white;
+}
+
+.auth-modal-switch a{
+    color:white;
+    font-weight:800;
+}
+
+.auth-modal-switch a:hover,
+.auth-modal-switch a:focus-visible{
+    text-decoration:underline;
+    text-underline-offset:4px;
+    outline:0;
+}
+
 .sidebar{
     width:250px;
     height:100vh;
@@ -823,6 +840,7 @@ canvas{
 }
 
 .inventory-search{
+    position:relative;
     flex:1;
     max-width:340px;
 }
@@ -842,7 +860,40 @@ canvas{
     background:white;
     color:#1f2937;
     font-size:14px;
+    padding-right:44px;
     box-shadow:0 10px 26px rgba(15,23,42,.04);
+}
+
+.search-clear-btn{
+    position:absolute;
+    top:50%;
+    right:10px;
+    width:28px;
+    height:28px;
+    display:grid;
+    place-items:center;
+    border:0;
+    border-radius:50%;
+    color:#64748b;
+    text-decoration:none;
+    transform:translateY(-50%);
+}
+
+.search-clear-btn:hover,
+.search-clear-btn:focus-visible{
+    background:#eef2f7;
+    color:#111827;
+    outline:0;
+}
+
+.search-clear-btn svg{
+    width:16px;
+    height:16px;
+    fill:none;
+    stroke:currentColor;
+    stroke-width:2.4;
+    stroke-linecap:round;
+    stroke-linejoin:round;
 }
 
 .showing-control{

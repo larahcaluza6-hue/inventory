@@ -94,15 +94,15 @@ $salesChartColors = array_map(
 
         <div class="col-lg-3 col-sm-6">
             <div class="card-box green">
-                <h5>Product Stock (g)</h5>
-                <h1><?php echo format_grams($available_data['total']); ?></h1>
+                <h5>Product Stock</h5>
+                <h1><?php echo format_quantity($available_data['total']); ?></h1>
             </div>
         </div>
 
         <div class="col-lg-3 col-sm-6">
             <div class="card-box blue">
-                <h5>Market Stock (g)</h5>
-                <h1><?php echo format_grams($market_stock_data['total']); ?></h1>
+                <h5>Market Stock</h5>
+                <h1><?php echo format_quantity($market_stock_data['total']); ?></h1>
             </div>
         </div>
 
