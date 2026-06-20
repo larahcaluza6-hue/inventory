@@ -50,7 +50,6 @@ if (count($receiptItems) === 0) {
 }
 
 $firstItem = $receiptItems[0];
-$customerName = $firstItem['customer_name'] !== '' ? $firstItem['customer_name'] : 'Walk-in Customer';
 $cashAmount = (float) $firstItem['cash_amount'];
 $changeAmount = (float) $firstItem['change_amount'];
 $grandTotal = 0;
@@ -103,10 +102,6 @@ foreach ($receiptItems as $item) {
                 <div>
                     <dt>Cashier</dt>
                     <dd><?php echo htmlspecialchars($firstItem['fullname'] ?? 'User'); ?></dd>
-                </div>
-                <div>
-                    <dt>Customer</dt>
-                    <dd><?php echo htmlspecialchars($customerName); ?></dd>
                 </div>
             </dl>
 

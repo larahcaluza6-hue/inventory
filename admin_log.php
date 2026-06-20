@@ -2,6 +2,22 @@
 include 'db.php';
 include 'admin_auth.php';
 
+$usersResult = mysqli_query(
+    $conn,
+    "SELECT
+        users.id,
+        users.fullname,
+        users.email,
+        users.role,
+        users.created_at,
+        COUNT(products.id) AS product_total,
+        COALESCE(SUM(products.quantity), 0) AS stock_total
+     FROM users
+     LEFT JOIN products ON products.user_id = users.id
+     GROUP BY users.id
+     ORDER BY users.id ASC"
+);
+
 $loginHistoryResult = mysqli_query(
     $conn,
     "SELECT *
@@ -28,7 +44,58 @@ $loginHistoryResult = mysqli_query(
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
             <h2 class="mb-1">Admin Log</h2>
-            <p class="admin-subtitle">Review account activity.</p>
+            <p class="admin-subtitle">Review users and account activity.</p>
+        </div>
+    </div>
+
+    <div class="admin-panel" id="users">
+        <div class="admin-panel-header">
+            <h3>Users</h3>
+        </div>
+
+        <div class="products-table-shell">
+            <table class="products-table admin-users-table">
+                <thead>
+                    <tr>
+                        <th>User</th>
+                        <th>Email</th>
+                        <th>Role</th>
+                        <th>Products</th>
+                        <th>Quantity</th>
+                        <th>Joined</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    <?php if (mysqli_num_rows($usersResult) > 0) { ?>
+                        <?php while ($user = mysqli_fetch_assoc($usersResult)) { ?>
+                            <tr>
+                                <td>
+                                    <div class="admin-user-cell">
+                                        <span class="admin-avatar">
+                                            <?php echo strtoupper(substr($user['fullname'], 0, 1)); ?>
+                                        </span>
+                                        <span><?php echo htmlspecialchars($user['fullname']); ?></span>
+                                    </div>
+                                </td>
+                                <td><?php echo htmlspecialchars($user['email']); ?></td>
+                                <td>
+                                    <span class="soft-pill <?php echo $user['role'] === 'admin' ? 'status-success' : 'category-pill'; ?>">
+                                        <?php echo htmlspecialchars(ucfirst($user['role'])); ?>
+                                    </span>
+                                </td>
+                                <td><?php echo (int) $user['product_total']; ?></td>
+                                <td><?php echo format_quantity($user['stock_total']); ?></td>
+                                <td><?php echo date('M d, Y', strtotime($user['created_at'])); ?></td>
+                            </tr>
+                        <?php } ?>
+                    <?php } else { ?>
+                        <tr>
+                            <td colspan="6" class="empty-products">No users found.</td>
+                        </tr>
+                    <?php } ?>
+                </tbody>
+            </table>
         </div>
     </div>
 
