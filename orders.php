@@ -18,12 +18,32 @@ $userId = (int) $_SESSION['user_id'];
 $isPrintView = isset($_GET['export']) && $_GET['export'] === 'print';
 $availableProducts = mysqli_query(
     $conn,
-    "SELECT id, product_name, quantity, grams
+    "SELECT id, product_name, category, brand, quantity, grams
      FROM products
      WHERE user_id = $userId
        AND quantity > 0
-     ORDER BY product_name ASC"
+     ORDER BY product_name ASC, brand ASC, category ASC, grams ASC"
 );
+$productGroups = [];
+
+while ($availableProduct = mysqli_fetch_assoc($availableProducts)) {
+    $groupKey = strtolower(trim($availableProduct['product_name'])) . '|' . strtolower(trim($availableProduct['brand'])) . '|' . strtolower(trim($availableProduct['category']));
+
+    if (!isset($productGroups[$groupKey])) {
+        $productGroups[$groupKey] = [
+            'label' => $availableProduct['product_name'],
+            'brand' => $availableProduct['brand'],
+            'category' => $availableProduct['category'],
+            'sizes' => []
+        ];
+    }
+
+    $productGroups[$groupKey]['sizes'][] = [
+        'id' => (int) $availableProduct['id'],
+        'grams' => (float) $availableProduct['grams'],
+        'quantity' => (float) $availableProduct['quantity']
+    ];
+}
 
 if ($stockFilter === 'low') {
     $query = "SELECT * FROM products
@@ -461,16 +481,22 @@ if ($stockFilter === 'low') {
                 </div>
 
                 <div class="modal-body">
-                    <select name="product_id" class="form-control mb-3" id="marketModalProductSelect" required>
+                    <select class="form-control mb-3" id="marketModalProductSelect" required>
                         <option value="">Select Product</option>
-                        <?php while ($availableProduct = mysqli_fetch_assoc($availableProducts)) { ?>
+                        <?php foreach ($productGroups as $groupKey => $productGroup) { ?>
                             <option
-                                value="<?php echo (int) $availableProduct['id']; ?>"
-                                data-grams="<?php echo htmlspecialchars($availableProduct['grams']); ?>"
+                                value="<?php echo htmlspecialchars($groupKey); ?>"
+                                data-sizes="<?php echo htmlspecialchars(json_encode($productGroup['sizes']), ENT_QUOTES); ?>"
                             >
-                                <?php echo htmlspecialchars($availableProduct['product_name']); ?>
+                                <?php echo htmlspecialchars($productGroup['label']); ?>
+                                - <?php echo htmlspecialchars($productGroup['brand']); ?>
+                                - <?php echo htmlspecialchars($productGroup['category']); ?>
                             </option>
                         <?php } ?>
+                    </select>
+
+                    <select name="product_id" class="form-control mb-3" id="marketModalGramsSelect" required disabled>
+                        <option value="">Select Grams</option>
                     </select>
 
                     <div class="input-group">
@@ -485,20 +511,9 @@ if ($stockFilter === 'low') {
                         >
                     </div>
 
-                    <div class="input-group mt-3">
-                        <input
-                            type="number"
-                            step="0.01"
-                            name="store_grams"
-                            id="marketModalGramsInput"
-                            class="form-control"
-                            min="0"
-                            placeholder="Grams"
-                            required
-                        >
-                    </div>
+                    <input type="hidden" name="store_grams" id="marketModalGramsInput" required>
                     <div class="market-grams-suggestion" id="marketModalGramsSuggestion">
-                        Select a product to see available grams.
+                        Select a product, then choose grams.
                     </div>
                 </div>
 
@@ -542,6 +557,7 @@ function openPrintExport(url) {
 
 const addMarketStockModalForm = document.getElementById('addMarketStockModalForm');
 const marketModalProductSelect = document.getElementById('marketModalProductSelect');
+const marketModalGramsSelect = document.getElementById('marketModalGramsSelect');
 const marketModalGramsInput = document.getElementById('marketModalGramsInput');
 const marketModalGramsSuggestion = document.getElementById('marketModalGramsSuggestion');
 
@@ -556,16 +572,42 @@ function formatSuggestionGrams(value) {
 
 function updateMarketModalGramsSuggestion() {
     const selectedOption = marketModalProductSelect.options[marketModalProductSelect.selectedIndex];
-    const productGrams = selectedOption ? selectedOption.dataset.grams || '' : '';
+    const sizes = selectedOption && selectedOption.dataset.sizes ? JSON.parse(selectedOption.dataset.sizes) : [];
 
-    if (!productGrams) {
-        marketModalGramsSuggestion.textContent = 'Select a product to see available grams.';
-        marketModalGramsInput.placeholder = 'Grams';
+    marketModalGramsSelect.innerHTML = '<option value="">Select Grams</option>';
+    marketModalGramsSelect.disabled = sizes.length === 0;
+    marketModalGramsInput.value = '';
+
+    if (sizes.length === 0) {
+        marketModalGramsSuggestion.textContent = 'Select a product, then choose grams.';
         return;
     }
 
-    marketModalGramsSuggestion.textContent = 'Available grams: ' + formatSuggestionGrams(productGrams);
-    marketModalGramsInput.placeholder = formatSuggestionGrams(productGrams);
+    sizes.forEach(function (size) {
+        const option = document.createElement('option');
+        option.value = size.id;
+        option.dataset.grams = size.grams;
+        option.textContent = formatSuggestionGrams(size.grams) + ' - ' + parseFloat(size.quantity || '0').toLocaleString() + ' available';
+        marketModalGramsSelect.appendChild(option);
+    });
+
+    if (sizes.length === 1) {
+        marketModalGramsSelect.selectedIndex = 1;
+        updateSelectedMarketModalGrams();
+        return;
+    }
+
+    marketModalGramsSuggestion.textContent = 'Choose one of the available gram sizes.';
+}
+
+function updateSelectedMarketModalGrams() {
+    const selectedOption = marketModalGramsSelect.options[marketModalGramsSelect.selectedIndex];
+    const productGrams = selectedOption ? selectedOption.dataset.grams || '' : '';
+
+    marketModalGramsInput.value = productGrams;
+    marketModalGramsSuggestion.textContent = productGrams
+        ? 'Selected grams: ' + formatSuggestionGrams(productGrams)
+        : 'Choose one of the available gram sizes.';
 }
 
 function showMarketErrorNotification(message) {
@@ -597,15 +639,16 @@ function closeMarketErrorNotification() {
 if (addMarketStockModalForm) {
     updateMarketModalGramsSuggestion();
     marketModalProductSelect.addEventListener('change', updateMarketModalGramsSuggestion);
+    marketModalGramsSelect.addEventListener('change', updateSelectedMarketModalGrams);
 
     addMarketStockModalForm.addEventListener('submit', function (event) {
-        const selectedOption = marketModalProductSelect.options[marketModalProductSelect.selectedIndex];
+        const selectedOption = marketModalGramsSelect.options[marketModalGramsSelect.selectedIndex];
         const productGrams = selectedOption ? parseFloat(selectedOption.dataset.grams || '0') : 0;
         const enteredGrams = parseFloat(marketModalGramsInput.value || '0');
 
-        if (Math.abs(productGrams - enteredGrams) > 0.00001) {
+        if (!marketModalGramsSelect.value || Math.abs(productGrams - enteredGrams) > 0.00001) {
             event.preventDefault();
-            showMarketErrorNotification('No grams in product.');
+            showMarketErrorNotification('Please choose product grams.');
         }
     });
 }
