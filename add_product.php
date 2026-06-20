@@ -1,4 +1,4 @@
-<?php
+<?phpi
 include 'db.php';
 include 'auth.php';
 
@@ -12,28 +12,11 @@ if (isset($_POST['add'])) {
     $price = (float) $_POST['price'];
     $status = $quantity > 0 ? "Available" : "Sold Out";
 
-    if ($quantity < 1) {
-        header("Location: products.php?error=" . urlencode("Quantity must be at least 1."));
-        exit();
-    }
-
-    if ($grams <= 0) {
-        header("Location: products.php?error=" . urlencode("Grams must be greater than 0."));
-        exit();
-    }
-
-    $check = mysqli_prepare(
+    $chetotck = mysqli_prepare(
         $conn,
-        "SELECT id
-         FROM products
-         WHERE user_id = ?
-           AND product_name = ?
-           AND category = ?
-           AND brand = ?
-           AND grams = ?
-         LIMIT 1"
+        "SELECT id FROM products WHERE user_id = ? AND grams = ? LIMIT 1"
     );
-    mysqli_stmt_bind_param($check, "isssd", $userId, $product_name, $category, $brand, $grams);
+    mysqli_stmt_bind_param($check, "id", $userId, $grams);
     mysqli_stmt_execute($check);
     $checkResult = mysqli_stmt_get_result($check);
 
