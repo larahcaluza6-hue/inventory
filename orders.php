@@ -583,13 +583,9 @@ function updateMarketModalGramsSuggestion() {
 
     sizes.forEach(function (size) {
         const option = document.createElement('option');
-        const details = [size.brand, size.category].filter(Boolean).join(' - ');
         option.value = size.id;
         option.dataset.grams = size.grams;
-        option.textContent = formatSuggestionGrams(size.grams)
-            + (details ? ' - ' + details : '')
-            + ' - ' + parseFloat(size.quantity || '0').toLocaleString()
-            + ' available';
+        option.textContent = formatSuggestionGrams(size.grams);
         marketModalGramsSelect.appendChild(option);
     });
 
